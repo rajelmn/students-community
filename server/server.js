@@ -44,11 +44,66 @@ io.on('connection', (socket) =>{
     })
 } )
 mongoose.connect( "mongodb+srv://rajelmn:Qwertymn07@chat.ccgoj.mongodb.net/data?retryWrites=true&w=majority&appName=chat")
-    .then(() => console.log('database connected'))
-    .catch(err => console.log('failed to connect', err));
+.then(() => console.log('database connected'))
+.catch(err => console.log('failed to connect', err));
 
 app.use(cors())
 app.use(express.json());
+
+app.post('/api/storemessage', async (req, res) => {
+    console.log(req.body)
+    // console.log(req.body.name);
+    try {
+
+        const user = new messages(
+             {
+                 name: req.body.name,
+                 message: req.body.message,
+                 url: req.body.url,
+                 date: req.body.date
+             }
+         )
+         await user.save();
+         res.send(user);
+         console.log(user)
+    }catch(err) {
+        console.log('oops');
+        console.log(err)
+    }
+})
+
+app.post('/api/storeuser', upload.single('file'), async (req, res, next) => {
+   
+        try{
+            const {name,password} = JSON.parse(req.body.user);
+            const result = await cloudinary.uploader.upload(req.file.path);
+            const image = result.secure_url || result.url;
+            // console.log(image)
+            const user = new users({
+                name: name,
+                password: password,
+                url: image
+            })
+            await user.save();
+            res.send(user);
+            // console.log(user)
+      }catch (err) {
+        console.log(err);
+      }
+
+})
+
+app.get('/api/getdata', async (req, res) => {
+    try{
+        const data = await messages.find({}).exec();
+        console.log(data)
+        res.send(data)
+    }
+    catch(err) {
+        console.log('hmmm something went wrong with sending the data', err);
+    }
+})
+
 
 app.use(express.static(path.join(__dirname, '..', 'src')));
 app.use('/images', express.static('images'));
@@ -58,58 +113,10 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'dist/index.html'))
 })
 
-app.post('/storemessage', async (req, res) => {
-    console.log(req.body)
-    console.log(req.body.name);
-   const user = new messages(
-        {
-            name: req.body.name,
-            message: req.body.message,
-            url: req.body.url,
-            date: req.body.date
-        }
-    )
-    await user.save();
-})
-
-app.post('/storeuser', upload.single('file'), async (req, res, next) => {
-   
-        try{
-            const {name,password} = JSON.parse(req.body.user);
-            const result = await cloudinary.uploader.upload(req.file.path);
-            const image = result.secure_url || result.url;
-            console.log(image)
-            const user = new users({
-                name: name,
-                password: password,
-                url: image
-            })
-            await user.save();
-            res.send(user);
-            console.log(user)
-      }catch (err) {
-        console.log(err);
-      }
-
-})
-
-app.get('/', (req, res) => {
-    res.send('hey')
-})
-
-app.get('/getdata', async (req, res) => {
-    const data = await messages.find({}).exec();
-    console.log(data)
-    res.send(data)
-})
-
-app.get('/',  (req, res) => {
-    res.send('hi')
-})
 
 
 server.listen(3000, () => {
-    console.log('app running in 4000')
+    console.log('app running in ' + PORT)
 })
 // import cors from 'cors';
 // import session from 'express-session';

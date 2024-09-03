@@ -26,7 +26,7 @@ export default function FormPage() {
         localStorage.setItem('name', e.target.name.value);
         
         try {
-            const userData = await fetch('/storeuser', {
+            const userData = await fetch('/api/storeuser', {
                 method: "POSt", 
                 body: formData
             }).then(res => res.json())

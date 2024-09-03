@@ -20,7 +20,7 @@ export default function Math() {
 
     async function storeMessagesInDb(message ,date) {
         try {
-        await fetch('/storemessage', {
+        await fetch('/api/storemessage', {
             method: 'post',
             headers: {
                 "Content-Type": "application/json",
@@ -43,11 +43,11 @@ export default function Math() {
 
  useEffect(() => {
     async function loadMessagesFromDb() {
-        const messages = await fetch('/getdata')
+        const messages = await fetch('/api/getdata')
                                 .then(res => res.json())
-                                .catch(console.log);
+                                .catch((err) => console.error(err));
         setMessages(messages);
-        // console.log(messages);
+        console.log(messages);
     }
 
     
