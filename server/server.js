@@ -1,6 +1,7 @@
 import express from 'express';
 import {createServer} from 'node:http';
 import { Socket } from 'socket.io-client';
+import 'dotenv/config';
 import mongoose from 'mongoose';
 import {Server} from 'socket.io';
 import {v2 as cloudinary} from 'cloudinary';
@@ -9,6 +10,8 @@ import path from 'node:path';
 import { messages, users } from './usersData.js';
 import multer from 'multer';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+dotenv.config()
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,7 +25,7 @@ const io = new Server(server , {
     cors: {
         origin: '*'
     }, 
-    connectionStateRecovery: {}
+    // connectionStateRecovery: {}
 })
 
 cloudinary.config({
@@ -32,18 +35,16 @@ cloudinary.config({
 });
 
 io.on('connection', (socket) =>{
-    console.log('user connected');
+    console.log('user connected', 'hmm');
     socket.on('message', (msg) => {
         io.emit('chat', msg)
     })
-    socket.on('username', (username) => {
-        io.emit('username', username);
-    })
+ 
     socket.on('disconnect', () => {
         console.log('user disconnected')
     })
 } )
-mongoose.connect( "mongodb+srv://rajelmn:Qwertymn07@chat.ccgoj.mongodb.net/data?retryWrites=true&w=majority&appName=chat")
+mongoose.connect(process.env.DB_URL)
 .then(() => console.log('database connected'))
 .catch(err => console.log('failed to connect', err));
 
@@ -51,8 +52,6 @@ app.use(cors())
 app.use(express.json());
 
 app.post('/api/storemessage', async (req, res) => {
-    console.log(req.body)
-    // console.log(req.body.name);
     try {
 
         const user = new messages(
@@ -65,7 +64,6 @@ app.post('/api/storemessage', async (req, res) => {
          )
          await user.save();
          res.send(user);
-         console.log(user)
     }catch(err) {
         console.log('oops');
         console.log(err)
@@ -96,7 +94,6 @@ app.post('/api/storeuser', upload.single('file'), async (req, res, next) => {
 app.get('/api/getdata', async (req, res) => {
     try{
         const data = await messages.find({}).exec();
-        console.log(data)
         res.send(data)
     }
     catch(err) {
@@ -116,7 +113,7 @@ app.get('*', (req, res) => {
 
 
 server.listen(3000, () => {
-    console.log('app running in ' + PORT)
+    console.log('app running on ' + PORT)
 })
 // import cors from 'cors';
 // import session from 'express-session';

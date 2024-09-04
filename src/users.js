@@ -14,19 +14,19 @@ export const users = [
     {
         name: "user_n",
         userName:"mhmhm",
-        url: "../images/veksen.jpeg",
+        url: "../images/sevken.jpeg",
         id: 2
     },
     {
         name: "unkown",
         userName: "Xfdara",
-        url: "../images/xetera.jpeg",
+        url: "../images/woman.jpeg",
         id: 3
     },
     {
         name: "user_2a",
         user: "nydfajrk",
-        url: "../images/tony-snark.jpeg",
+        url: "../images/Xoen.jpeg",
         id:4,
     }
 ];

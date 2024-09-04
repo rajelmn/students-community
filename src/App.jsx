@@ -3,7 +3,6 @@ import SideBar from './sideBar';
 import './App.css';
 import Main from './mainContent'
 import { Outlet } from 'react-router-dom';
-import { socket } from './socket';
 
 export default function App() {
 

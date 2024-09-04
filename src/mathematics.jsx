@@ -1,19 +1,25 @@
 import Header from './header';
 import SideBar from './sideBar';
 import App from './App';
-import './App.css'
+import './App.css';
 import {useEffect, useRef, useState} from 'react'
 import { useNavigate } from 'react-router-dom';
-import { socket } from './socket';
+// import { socket } from './socket';
+import { io } from "socket.io-client";
 import { IoMdSend } from "react-icons/io";
 
 export default function Math() {
     const [messages, setMessages] = useState([]);
-    const navigate = useNavigate()
-    const input = useRef(null)
+    const navigate = useNavigate();
+    
+    const socket = io('/', {
+    transports: ['websocket'],
+    path: '/socket.io'
+    });
+    const input = useRef(null);
     if(!document.cookie) {
-        navigate('/register')
-    }
+        navigate('/register');
+    };
     // console.log(document.cookie)
     const name = document.cookie.split(';')[0].split('=')[1] || 'annonymous';
     const url = document.cookie.split(';')[1].split('=')[1] || '';
@@ -28,9 +34,9 @@ export default function Math() {
             body:JSON.stringify({message, name, url, date})
             })
        } catch(err) {
-        console.error(err)
+        console.error(err);
       }
-   }
+   };
     function handleSubmit(e) {
         e.preventDefault();
         const date = new Date() ;
@@ -39,9 +45,10 @@ export default function Math() {
         socket.emit('message', {message: e.target.text.value, name, url, date: currentDate });
         storeMessagesInDb(e.target.text.value, currentDate);
         input.current.value = '';
- }
+ };
 
  useEffect(() => {
+    console.log('trying to connect to socket');
     async function loadMessagesFromDb() {
         const messages = await fetch('/api/getdata')
                                 .then(res => res.json())
@@ -51,21 +58,23 @@ export default function Math() {
     }
 
     
+    
     function onConnection() {
         console.log('connection');
         socket.on('chat', (msg) => {
             // console.log('socket') // (*)
-            setMessages(prev => [...prev, msg])
+            setMessages(prev => [...prev, msg]);
         })
     }
+    console.log('mount');
 
     loadMessagesFromDb();
-    socket.connect()
-    socket.on('connect', onConnection)
+    socket.connect();
+    socket.on('connect', onConnection);
     return () => {
         socket.disconnect();
         socket.off('connect', onConnection);
-        socket.off('chat')
+        socket.off('chat');
     }
  }, [])
     return(
@@ -73,7 +82,7 @@ export default function Math() {
             <SideBar />
             <div className='w-full flex flex-col '>
             <Header />
-            <div className="messages  overflow-y-auto h-[calc(100vh_-_55px)] bg-black pb-5">
+            <div className="messages mb-5 overflow-y-auto h-[calc(100vh_-_55px)] bg-black pb-5">
             {messages && messages.map((message, index) => 
                 <div className='message w-full px-3 flex text-white'>
                     {(index > 0 && messages[index - 1].name ) === messages[index].name ? (
