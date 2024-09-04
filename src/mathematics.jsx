@@ -18,11 +18,12 @@ export default function Math() {
     });
     const input = useRef(null);
     if(!document.cookie) {
+        console.log('doesnt have a cookie')
         navigate('/register');
     };
     // console.log(document.cookie)
-    const name = document.cookie.split(';')[0].split('=')[1] || 'annonymous';
-    const url = document.cookie.split(';')[1].split('=')[1] || '';
+    const name = document.cookie ? document.cookie.split(';')[0].split('=')[1] : '' ;
+    const url = document.cookie ? document.cookie.split(';')[1].split('=')[1] : '';
 
     async function storeMessagesInDb(message ,date) {
         try {
