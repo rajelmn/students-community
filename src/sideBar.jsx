@@ -25,11 +25,17 @@ export default function SideBar() {
             </Link>
             )}
         </div>
-        <Link to='/math' className='flex justify-start items-center no-underline ml-4 w-full hover:bg-black'>
+        <Link to='/channel/discussion' className='flex justify-start items-center no-underline ml-4 w-full hover:bg-black'>
+       <FaHashtag /> <p className='ml-2'>discussion</p>
+        </Link>
+        <Link to='/channel/math' className='flex justify-start items-center no-underline mt-4 ml-4 w-full hover:bg-black'>
        <FaHashtag /> <p className='ml-2'>Mathematics</p>
         </Link>
-        <Link to='/physics' className='flex justify-start items-center no-underline mt-4 ml-4 w-full hover:bg-black'>
+        <Link to='/channel/physics' className='flex justify-start items-center no-underline mt-4 ml-4 w-full hover:bg-black'>
        <FaHashtag /> <p className='ml-2'>Physics</p>
+        </Link>
+        <Link to='/channel/science' className='flex justify-start items-center no-underline mt-4 ml-4 w-full hover:bg-black'>
+       <FaHashtag /> <p className='ml-2'>Science</p>
         </Link>
     </div>
     )

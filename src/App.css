@@ -10,16 +10,24 @@
 
 
 .messages {
-    scrollbar-color: rgb(202, 151, 56) white;
+    scrollbar-color: rgb(202, 151, 56) transparent;
     scrollbar-width: thin;
+}
+
+body {
+    overflow:hidden
 }
 
 .messages img {
     width:70px !important;
+    max-height: 72px;
 }
 @media  (max-width : 600px) {
     xinput {
         color: white;
+    }
+    .form-test{
+        height:140px !important;
     }
     /* .header {
         display: none;
@@ -28,6 +36,6 @@
         display: none;
      }
      .side-bar {
-        width: 36vw !important;
+        width: 30vw !important;
      }
 }

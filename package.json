@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "node server/server.js",
+    "start": "nodemon server/server.js",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
@@ -22,6 +22,7 @@
     "http-proxy-middleware": "^3.0.0",
     "mongoose": "^8.5.3",
     "multer": "^1.4.5-lts.1",
+    "nodemon": "^3.1.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-icons": "^5.3.0",

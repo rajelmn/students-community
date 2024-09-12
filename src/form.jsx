@@ -5,7 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import './index.css';
 export default function FormPage() {
     const [file , setFile] = useState(null);
+    const [error, setError] = useState(false);
     const form = useRef(null);
+    const userNameInput = useRef(null);
     const navigate = useNavigate()
     
     // const setUser = useStore((state) => state.setUser);
@@ -19,20 +21,26 @@ export default function FormPage() {
    async function handleSubmit(e){
         e.preventDefault();
         // setUser(e.target.name.value)
-        const user = JSON.stringify({name: e.target.name.value, password: e.target.password.value})
+        const user = JSON.stringify({name: e.target.name.value, password: e.target.password.value, userName: e.target.userName.value})
         const formData = new FormData();
         formData.append('file', e.target.myImage.files[0])
         formData.append('user', user);
-        localStorage.setItem('name', e.target.name.value);
+        // localStorage.setItem('name', e.target.name.value);
         
         try {
-            const userData = await fetch('/api/storeuser', {
+            const userData = await fetch('/storeuser', {
                 method: "POSt", 
                 body: formData
-            }).then(res => res.json())
+            }).then(res => res.json()).catch(err => console.log(err));
+            if(userData === 403) {
+                setError(true);
+                userNameInput.current.value = '';
+                return;
+            }
+            console.log(userData);
             
                 document.cookie = `name=${userData.name}; expires=Thu, 07 Jan 2040 12:00:00 GMT`;
-                document.cookie = `src=${userData.url}; expires=Thu, 07 Jan 2040 12:00:00 GMT`
+                document.cookie = `src=${userData.url}; expires=Thu, 07 Jan 2040 12:00:00 GMT`;
                navigate('/');
             
         }
@@ -48,8 +56,12 @@ export default function FormPage() {
                 <h1 className="mb-2">register</h1>
             <form className="w-80" ref={form} onSubmit={handleSubmit}>
                 <div className="mt-8">
-                <label htmlFor="userName">userName</label>
-                <input type="text" id="userName"  name="name" className="block w-full p-2 focus:outline-none focus:ring-0 focus:border-[orange] border-solid border-[1px] border-slate-950" placeholder="enter your name"/>
+                <label htmlFor="userName">name</label>
+                <input type="text" id="name"  name="name" className="block w-full p-2 focus:outline-none focus:ring-0 focus:border-[orange] border-solid border-[1px] border-slate-950" placeholder="enter your name"/>
+                </div>
+                <div className="mt-8">
+                <label htmlFor="userName" style={{outline: error? 'red' : 'black'}}>user name</label>
+                <input type="text" ref={userNameInput} id="userName"  name="userName" className="block w-full p-2 focus:outline-none focus:ring-0 focus:border-[orange] border-solid border-[1px] border-slate-950" placeholder="enter your name"/>
                 </div>
                 <div className="mt-8">
                 <label htmlFor="password">password</label>
@@ -59,7 +71,7 @@ export default function FormPage() {
                     <input type="file" name="myImage" accept="image/png, image/jpg, image/jpeg" required />
                 </label>
                 <button className="block mt-2 text-white w-20 h-8 bg-orange-500 rounded-lg" type="submit">register</button>
-
+                <>{error && 'user name already exist , try another one'}</>
             </form>
         </div>
         <form />

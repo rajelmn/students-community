@@ -7,6 +7,7 @@ const userSchema = mongoose.Schema({
     userName: String,
     message: String,
     date: String,
+     id: String,
 })
 
 const messages = new mongoose.model('messages', userSchema);
