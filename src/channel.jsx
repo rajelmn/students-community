@@ -119,7 +119,7 @@ export default function Channel() {
                       className="rounded-[50%] w-16 block mr-3"
                     />
                     <div>
-                      <p> {message.date} </p>
+                      <p className="font-thic text-xs"> {message.date} </p>
                       <p>{message.name}</p>
                       <p className="break-all">{message.message}</p>
                     </div>

@@ -57,15 +57,15 @@ export default function FormPage() {
             <form className="w-80" ref={form} onSubmit={handleSubmit}>
                 <div className="mt-8">
                 <label htmlFor="userName">name</label>
-                <input type="text" id="name"  name="name" className="block w-full p-2 focus:outline-none focus:ring-0 focus:border-[orange] border-solid border-[1px] border-slate-950" placeholder="enter your name"/>
+                <input type="text" id="name"  name="name" className="block w-full p-2 focus:outline-none focus:ring-0 focus:border-[orange] border-solid border-[1px] border-slate-950" placeholder="enter your name" required/>
                 </div>
                 <div className="mt-8">
                 <label htmlFor="userName" style={{outline: error? 'red' : 'black'}}>user name</label>
-                <input type="text" ref={userNameInput} id="userName"  name="userName" className="block w-full p-2 focus:outline-none focus:ring-0 focus:border-[orange] border-solid border-[1px] border-slate-950" placeholder="enter your name"/>
+                <input type="text" ref={userNameInput} id="userName"  name="userName" className="block w-full p-2 focus:outline-none focus:ring-0 focus:border-[orange] border-solid border-[1px] border-slate-950" placeholder="enter your name" required/>
                 </div>
                 <div className="mt-8">
                 <label htmlFor="password">password</label>
-                <input type="password" id="password" name="password"  className="block p-2 w-full focus:outline-none focus:ring-0 focus:border-[orange] border-solid border-[1px] border-slate-950" placeholder="enter your password"/>
+                <input type="password" id="password" name="password"  className="block p-2 w-full focus:outline-none focus:ring-0 focus:border-[orange] border-solid border-[1px] border-slate-950" placeholder="enter your password" required/>
                 </div>
                 <label className="mt-4 block">Your profile image
                     <input type="file" name="myImage" accept="image/png, image/jpg, image/jpeg" required />
