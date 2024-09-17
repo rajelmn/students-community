@@ -10,8 +10,6 @@ export default function FormPage() {
     const userNameInput = useRef(null);
     const navigate = useNavigate()
     
-    // const setUser = useStore((state) => state.setUser);
-    // const setImage = useStore((state) => state.setImage)
     const handleUpload = async () => {
         const formData = new FormData();
         formData.append('key', 'value')
@@ -20,13 +18,10 @@ export default function FormPage() {
     }
    async function handleSubmit(e){
         e.preventDefault();
-        // setUser(e.target.name.value)
         const user = JSON.stringify({name: e.target.name.value, password: e.target.password.value, userName: e.target.userName.value})
         const formData = new FormData();
         formData.append('file', e.target.myImage.files[0])
-        formData.append('user', user);
-        // localStorage.setItem('name', e.target.name.value);
-        
+        formData.append('user', user);        
         try {
             const userData = await fetch('/storeuser', {
                 method: "POSt", 

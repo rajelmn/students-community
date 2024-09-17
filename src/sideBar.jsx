@@ -4,7 +4,7 @@ import {useState} from 'react'
 import { FaHashtag } from "react-icons/fa";
 export default function SideBar() {
     const [user, setUser] = useState(users)
-
+    const [channels, setChannels] = useState([]);
     function handleDelete(user) {
         setUser(prev => prev.filter(item => item.id !== user.id))
     }
@@ -37,6 +37,9 @@ export default function SideBar() {
         <Link to='/channel/science' className='flex justify-start items-center no-underline mt-4 ml-4 w-full hover:bg-black'>
        <FaHashtag /> <p className='ml-2'>Science</p>
         </Link>
+        <div>
+            <h1>help channels</h1>
+        </div>
     </div>
     )
 }

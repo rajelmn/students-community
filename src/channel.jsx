@@ -59,7 +59,7 @@ export default function Channel() {
       url,
       date: currentDate,
     },  id);
-    storeMessagesInDb(e.target.text.value, currentDate);
+    // storeMessagesInDb(e.target.text.value, currentDate);
     input.current.value = "";
   }
 
@@ -88,7 +88,7 @@ export default function Channel() {
     }
     console.log("mount");
 
-    loadMessagesFromDb();
+    // loadMessagesFromDb();
     socket.connect();
     socket.on("connect", onConnection);
     return () => {
@@ -101,7 +101,7 @@ export default function Channel() {
   return (
     <div className="flex bg-background h-screen">
       <SideBar />
-      <div className="w-full flex flex-col ">
+      <div className="w-full flex flex-col "> 
         <Header />
         <div className="messages overflow-y-auto h-[calc(100vh-(55px+100px))] bg-black pb-5">
           {messages &&

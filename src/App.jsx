@@ -13,13 +13,3 @@ export default function App() {
    </div>
   )
 }
-
-
-// export function Root() {
-//   return(
-//     <div className='flex'>
-//     <SideBar />
-//     <Main />
-//     </div>
-//   )
-// }
