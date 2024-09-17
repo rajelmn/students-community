@@ -39,7 +39,7 @@ export default function Channel() {
     formData.append('user', user);
     formData.append('file',file )
     try {
-       const response = await fetch("/api/storemessage", {
+       const response = await fetch("/storemessage", {
         method: "post",
         body: formData,
       });
@@ -91,7 +91,7 @@ export default function Channel() {
   useEffect(() => {
     socket.emit('join',  id)
     async function loadMessagesFromDb() {
-      const messages = await fetch("/api/getdata", {
+      const messages = await fetch("/getdata", {
         method: "post",
         headers: {
           "Content-Type": "application/json",
@@ -105,7 +105,7 @@ export default function Channel() {
 
     async function loadChannelsFromDb() {
       try {
-        const res = await fetch('/api/getChannels');
+        const res = await fetch('/getChannels');
         const allChannels = await res.json();
         setChannels(allChannels)
       } catch(err) {
