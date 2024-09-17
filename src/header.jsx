@@ -1,18 +1,19 @@
 import { MdAddIcCall} from "react-icons/md";
+import { HiOutlineHashtag } from "react-icons/hi";
 import { IoVideocam, IoPersonAdd } from "react-icons/io5";
 import { TiPin } from "react-icons/ti";
 import { FaUserCircle } from "react-icons/fa";
 import { RiInboxFill } from "react-icons/ri";
 import { FiHelpCircle } from "react-icons/fi"
 
-export default function header({url, userName, children}) {
+export default function header({url, userName, children, channelName}) {
 
     return(
         <>
         <div className=" header h-[55px] w-[100%] flex justify-between shadow-md text-white">
             <div className="logo flex items-center">
-                <img src={url} className="rounded-full w-10" alt="" />
-                <span className="text-white pl-2">{userName}</span>
+                <HiOutlineHashtag className="text-orange-500 text-2xl"/>
+                <p>{channelName}</p>
             </div>
             <div className="icons text-[#B5BAC1;] w-[60%] justify-between flex items-center text-white ">
                 <MdAddIcCall className="cursor-pointer text-2xl "/>   

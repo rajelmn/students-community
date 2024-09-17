@@ -7,11 +7,10 @@ import {Server} from 'socket.io';
 import {v2 as cloudinary} from 'cloudinary';
 import cors from 'cors';
 import path from 'node:path';
-import { messages, users } from './usersData.js';
+import { messages, users, channels} from './usersData.js';
 import multer from 'multer';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { channel } from 'node:diagnostics_channel';
 dotenv.config()
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,13 +35,20 @@ cloudinary.config({
 });
 
 io.on('connection', (socket) =>{
-    console.log('user connected');
 
-    socket.on('join', ( id) => {
-        socket.join( id)
+    socket.on('join', (id) => {
+        socket.join(id)
     })
     socket.on('message', (msg,  id) => {
-        io.to( id).emit('chat', msg)
+        console.log('emitting messasge')
+        io.to(id).emit('chat', msg)
+    })
+
+    socket.on('channels', async (channelDetail, id) => {
+        const channel =  await new channels(channelDetail);
+        await channel.save();
+        console.log('emitting channels');
+        io.emit('channels', channelDetail)
     })
  
     socket.on('disconnect', () => {
@@ -115,6 +121,18 @@ app.post('/getdata', async (req, res) => {
         res.status(403).json({message: 'failed to get the channel data'})
     }
 })
+
+app.get('/getChannels', async (req, res) => {
+    try {
+        const allChannels = await channels.find().exec();
+        console.log(channels)
+        res.send(allChannels)     
+
+    } catch(err) {
+        console.log(err)
+    }
+})
+
 app.use('/images', express.static('images'))
 app.use(express.static('dist'))
 app.get('*', (req, res) => {

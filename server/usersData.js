@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const userSchema = mongoose.Schema({
     name: String,
@@ -10,7 +10,16 @@ const userSchema = mongoose.Schema({
      id: String,
 })
 
+
+const channelSchema = mongoose.Schema({
+    owner: String,
+    date: Date,
+    subject: String,
+    id: String,
+})
+
+const channels = new mongoose.model('channels', channelSchema);
 const messages = new mongoose.model('messages', userSchema);
 const users = new mongoose.model('users', userSchema)
-export { messages, users }
+export { messages, users, channels }
 

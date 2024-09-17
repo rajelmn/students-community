@@ -1,18 +1,15 @@
 import {users} from './users'
 import { Link } from 'react-router-dom';
-import {useState} from 'react'
-import { FaHashtag } from "react-icons/fa";
-export default function SideBar() {
-    const [user, setUser] = useState(users)
-    const [channels, setChannels] = useState([]);
-    function handleDelete(user) {
-        setUser(prev => prev.filter(item => item.id !== user.id))
-    }
+import { useRef, useState } from 'react';
+import { IoTicketOutline } from "react-icons/io5";
+import { FaHashtag, FaLess } from "react-icons/fa";
+export default function SideBar({ handleCreatingChannels, channels, inputSubject }) {
+    const [isCreatedChannel, setIsCreatedChannel] = useState(false);
+    const user = document.cookie.split(";")[0].split("=")[1];
     return(
-        <div className="side-bar flex flex-col text-white items-start bg-[#2B2D31] w-[20vw] h-[100vh]">
-       
-        {/* <input type="search" className='bg-[#1E1F22]' placeholder='hello'/> */}
-        <div className='w-[100%] h-[60%]'>
+        <div className="side-bar min-w-[150px] w-[27vw] flex flex-col overflow-y-auto overflow-x-hidden text-white items-start bg-[#2B2D31] ">
+
+        <div className='w-[100%] h-[47%]'>
             {users.map((user, id) => 
             <Link to={'/user/' + user.id} key={id}>         
             <div className='flex justify-between items-center mt-4' key={user.id}>
@@ -20,11 +17,43 @@ export default function SideBar() {
                 <img src={user.url} className='rounded-full w-9 mr-1' alt="" />
                 <p >{user.name}</p>
                </div> 
-               {/* <p onClick={() => handleDelete(user)}>x</p> */}
             </div>
             </Link>
             )}
         </div>
+        {isCreatedChannel && (
+            <>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+  <div className="w-3/5 bg-white rounded-lg shadow-xl p-6">
+    <div className="flex justify-between items-center mb-4">
+      <h2 className="text-xl font-bold text-gray-900">Create Ticket and ask</h2>
+      <button className="text-gray-500 hover:text-gray-700" onClick={() => setIsCreatedChannel(false)}>✕</button>
+    </div>
+    <div className="space-y-4">
+      <div>
+        <label htmlFor="popup-input" className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+        <input type="text" id="popup-input" ref={inputSubject} className="w-full px-3 py-2 border text-black border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+      </div>
+      <div className="flex justify-end">
+        <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        onClick={() => {
+          const isUserAlreadyCreatedChannel = channels.find((item) => item.owner === user);
+          setIsCreatedChannel(false)
+          if(isUserAlreadyCreatedChannel) {
+            alert('nigge you already created a channel');
+            return;
+          }
+            handleCreatingChannels()
+        }}
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+            </>
+        )}
         <Link to='/channel/discussion' className='flex justify-start items-center no-underline ml-4 w-full hover:bg-black'>
        <FaHashtag /> <p className='ml-2'>discussion</p>
         </Link>
@@ -37,9 +66,22 @@ export default function SideBar() {
         <Link to='/channel/science' className='flex justify-start items-center no-underline mt-4 ml-4 w-full hover:bg-black'>
        <FaHashtag /> <p className='ml-2'>Science</p>
         </Link>
+        <div onClick={() => setIsCreatedChannel(true)} className='pl-4 flex items-center mt-4 w-full cursor-pointer hover:bg-[#747474]'>
+        <IoTicketOutline/>
+            <p>create help</p>
+        </div>
         <div>
-            <h1>help channels</h1>
+        
+        {channels && channels.map( (channel) =>
+        <>
+        <Link to={`/channel/${channel.id}`} className='flex w-full justify-start items-center no-underline mt-4  hover:bg-black'>
+        <FaHashtag /> <p className=' break-all'>{channel.subject} | {channel.owner}</p>
+         </Link>
+        </>
+        )}
         </div>
     </div>
     )
 }
+
+//clamp(22px, 3vw, 30px)
