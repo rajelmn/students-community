@@ -33,15 +33,20 @@ export default function Channel() {
     ? document.cookie.split(";")[1].split("=")[1]
     : "";
 
-  async function storeMessagesInDb(message, date) {
+  async function storeMessagesInDb(message, date, file) {
+    const user = JSON.stringify({ message, name, url, date,  id })
+    const formData = new FormData();
+    formData.append('user', user);
+    formData.append('file',file )
     try {
-      await fetch("/api/storemessage", {
+       const response = await fetch("/api/storemessage", {
         method: "post",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message, name, url, date,  id }),
+        body: formData,
       });
+      console.log(response.ok);
+      const image = await response.json();
+      console.log(image);
+      return image
     } catch (err) {
       console.error(err);
     }
@@ -55,21 +60,31 @@ export default function Channel() {
              }, id)
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+    let image;
+    let file = e.target.image.files[0];
+    console.log(file);
+    console.log(e.target)
+    console.log(e.target.image)
     const date = new Date();
     const currentDate = date.toLocaleTimeString("en-mr", {
       hour: "numeric",
       minute: "numeric",
       hour12: true,
     });
+    if(file) {
+       image = await storeMessagesInDb(e.target.text.value, currentDate , file);
+    }
+    console.log('the thing i want: ' + image);
     socket.emit("message", {
       message: e.target.text.value,
       name,
       url,
       date: currentDate,
+      image
     },  id);
-    storeMessagesInDb(e.target.text.value, currentDate);
+    file = "";
     input.current.value = "";
   }
 
@@ -136,19 +151,21 @@ export default function Channel() {
               <>
                 {(index > 0 && messages[index - 1].name) ===
                 messages[index].name && messages[index - 1].date === messages[index].date ? (
-                  <div className={`message w-full px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} flex text-white`}>
+                  <div className={`message w-full px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} flex flex-col text-white`}>
                     <p className="break-all ml-[79px]">{message.message}</p>
+                    <img src={message.image} className="unstyle-images w-[50%] ml-16 block"/>
                   </div>
                 ) : (
                   <div className={`message w-full  px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} flex text-white`}>
                     <img
                       src={message.url}
-                      className="rounded-[50%] w-16 block mr-3"
+                      className="rounded-[50%] w-[70px] block max-h-[72px] mr-3"
                     />
-                    <div>
+                    <div className="flex flex-col justify-start">
                       <p className="font-thic text-xs"> {message.date} </p>
                       <p>{message.name}</p>
                       <p className="break-all">{message.message}</p>
+                      <img src={message.image} className="w-[50%]"/>
                     </div>
                   </div>
                 )}
@@ -165,7 +182,7 @@ export default function Channel() {
               <label htmlFor="upload-file">
             <FaUpload className="text-white text-2xl" />
               </label>
-            <input type="file" id="upload-file" className="hidden"/>
+            <input type="file" id="upload-file" className="hidden" name="image"/>
             </div>
             
             <input

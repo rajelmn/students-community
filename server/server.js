@@ -16,7 +16,7 @@ dotenv.config()
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
-const upload = multer({ dest:"./" })
+const upload = multer({ dest:"uploads/" })
 const PORT = 3000;
 
 const server = createServer(app);
@@ -25,7 +25,7 @@ const io = new Server(server , {
     cors: {
         origin: '*'
     }, 
-    // connectionStateRecovery: {}
+    connectionStateRecovery: {}
 })
 
 cloudinary.config({
@@ -51,9 +51,9 @@ io.on('connection', (socket) =>{
         io.emit('channels', channelDetail)
     })
  
-    socket.on('disconnect', () => {
-        console.log('user disconnected')
-    })
+    // socket.on('disconnect', () => {
+    //     console.log('user disconnected')
+    // })
 } )
 mongoose.connect(process.env.DB_URL)
 .then(() => console.log('database connected'))
@@ -62,20 +62,30 @@ mongoose.connect(process.env.DB_URL)
 app.use(cors())
 app.use(express.json());
 
-app.post('/storemessage', async (req, res) => {
+app.post('/storemessage', upload.single('file'),async (req, res) => {
     try {
-        console.log('storing data with  id:' + req.body. id)
+        // console.log('storing data with  id:' + req.body. id)
+        //  await user.save();
+        //  res.send(user);
+        const body = JSON.parse(req.body.user);
+        let imageUrl;
+        if(req.file) {
+            const image = await cloudinary.uploader.upload(req.file?.path);
+             imageUrl = image?.secure_url
+        }
         const user = new messages(
              {
-                 name: req.body.name,
-                 message: req.body.message,
-                 url: req.body.url,
-                 date: req.body.date,
-                  id: req.body. id
+                 name: body.name,
+                 message: body.message,
+                 url: body.url,
+                 date: body.date,
+                 id: body.id,
+                 image: imageUrl
              }
          )
          await user.save();
-         res.send(user);
+         console.log(user)
+         res.status(200).json(imageUrl)
     }catch(err) {
         console.log('oops');
         console.log(err)
@@ -125,7 +135,6 @@ app.post('/getdata', async (req, res) => {
 app.get('/getChannels', async (req, res) => {
     try {
         const allChannels = await channels.find().exec();
-        console.log(channels)
         res.send(allChannels)     
 
     } catch(err) {

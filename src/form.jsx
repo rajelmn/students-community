@@ -10,18 +10,13 @@ export default function FormPage() {
     const userNameInput = useRef(null);
     const navigate = useNavigate()
     
-    const handleUpload = async () => {
-        const formData = new FormData();
-        formData.append('key', 'value')
-        console.log(formData);
-        console.log('hi')
-    }
    async function handleSubmit(e){
         e.preventDefault();
         const user = JSON.stringify({name: e.target.name.value, password: e.target.password.value, userName: e.target.userName.value})
         const formData = new FormData();
         formData.append('file', e.target.myImage.files[0])
         formData.append('user', user);        
+        console.log(e.target.myImage.files[0])
         try {
             const userData = await fetch('/storeuser', {
                 method: "POSt", 
@@ -36,7 +31,7 @@ export default function FormPage() {
             
                 document.cookie = `name=${userData.name}; expires=Thu, 07 Jan 2040 12:00:00 GMT`;
                 document.cookie = `src=${userData.url}; expires=Thu, 07 Jan 2040 12:00:00 GMT`;
-               navigate('/');
+            //    navigate('/');
             
         }
         catch(err) {

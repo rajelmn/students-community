@@ -7,7 +7,8 @@ const userSchema = mongoose.Schema({
     userName: String,
     message: String,
     date: String,
-     id: String,
+    id: String,
+    image: String,
 })
 
 

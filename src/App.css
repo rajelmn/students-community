@@ -18,10 +18,14 @@ body {
     overflow:hidden
 }
 
-.messages img {
+.unstyled-images {
+    margin-left:70px !important;
+}
+
+/* .messages img {
     width:70px !important;
     max-height: 72px;
-}
+} */
 @media  (max-width : 600px) {
     xinput {
         color: white;
