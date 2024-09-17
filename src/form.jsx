@@ -31,7 +31,7 @@ export default function FormPage() {
             
                 document.cookie = `name=${userData.name}; expires=Thu, 07 Jan 2040 12:00:00 GMT`;
                 document.cookie = `src=${userData.url}; expires=Thu, 07 Jan 2040 12:00:00 GMT`;
-            //    navigate('/');
+               navigate('/');
             
         }
         catch(err) {
