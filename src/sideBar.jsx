@@ -7,7 +7,7 @@ export default function SideBar({ handleCreatingChannels, channels, inputSubject
     const [isCreatedChannel, setIsCreatedChannel] = useState(false);
     const user = document.cookie.split(";")[0].split("=")[1];
     return(
-        <div className={`side-bar pb-4 w-[27vw] min-w-[180px] h-screen flex flex-col overflow-y-auto overflow-x-hidden text-white items-start bg-[#2B2D31]`}>
+        <div className={`side-bar w-[27vw] min-w-[180px] h-screen flex flex-col overflow-y-auto overflow-x-hidden text-white items-start bg-[#2B2D31]`}>
 
         <div className='w-[100%] h-[47%]'>
             {users.map((user, id) => 
@@ -96,24 +96,6 @@ export default function SideBar({ handleCreatingChannels, channels, inputSubject
         
         {channels && channels.map( (channel) =>
         <>
-        <Link to={`/channel/${channel.id}`} key={'phone-'+ channel.id} onClick={() => handleChangingMenuState(false)} className='flex phone-link w-full justify-start items-center no-underline mt-4  hover:bg-black'>
-        <FaHashtag /> <p className=' break-all'>{channel.subject} | {channel.owner}</p>
-         </Link>
-         <Link to={`/channel/${channel.id}`} key={'pc-'+ channel.id}  className='flex pc-link w-full justify-start items-center no-underline mt-4  hover:bg-black'>
-        <FaHashtag /> <p className=' break-all'>{channel.subject} | {channel.owner}</p>
-         </Link>
-        <Link to={`/channel/${channel.id}`} key={'phone-'+ channel.id} onClick={() => handleChangingMenuState(false)} className='flex phone-link w-full justify-start items-center no-underline mt-4  hover:bg-black'>
-        <FaHashtag /> <p className=' break-all'>{channel.subject} | {channel.owner}</p>
-         </Link>
-         <Link to={`/channel/${channel.id}`} key={'pc-'+ channel.id}  className='flex pc-link w-full justify-start items-center no-underline mt-4  hover:bg-black'>
-        <FaHashtag /> <p className=' break-all'>{channel.subject} | {channel.owner}</p>
-         </Link>
-        <Link to={`/channel/${channel.id}`} key={'phone-'+ channel.id} onClick={() => handleChangingMenuState(false)} className='flex phone-link w-full justify-start items-center no-underline mt-4  hover:bg-black'>
-        <FaHashtag /> <p className=' break-all'>{channel.subject} | {channel.owner}</p>
-         </Link>
-         <Link to={`/channel/${channel.id}`} key={'pc-'+ channel.id}  className='flex pc-link w-full justify-start items-center no-underline mt-4  hover:bg-black'>
-        <FaHashtag /> <p className=' break-all'>{channel.subject} | {channel.owner}</p>
-         </Link>
         <Link to={`/channel/${channel.id}`} key={'phone-'+ channel.id} onClick={() => handleChangingMenuState(false)} className='flex phone-link w-full justify-start items-center no-underline mt-4  hover:bg-black'>
         <FaHashtag /> <p className=' break-all'>{channel.subject} | {channel.owner}</p>
          </Link>
