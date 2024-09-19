@@ -4,13 +4,17 @@ import { IoVideocam, IoPersonAdd } from "react-icons/io5";
 import { TiPin } from "react-icons/ti";
 import { FaUserCircle } from "react-icons/fa";
 import { RiInboxFill } from "react-icons/ri";
+import { CiMenuBurger, CiSquareRemove  } from "react-icons/ci";
 import { FiHelpCircle } from "react-icons/fi"
 
-export default function header({url, userName, children, channelName}) {
+export default function header({ channelName, handleBurgerMenu, isClickedOnMenu}) {
 
     return(
         <>
-        <div className=" header h-[55px] w-[100%] flex justify-between shadow-md text-white">
+        <div className=" header h-[55px] p-4 flex justify-between shadow-md text-white">
+            <div className="burger-menu flex items-center cursor-pointer" onClick={handleBurgerMenu}>
+           {isClickedOnMenu ? <CiSquareRemove className="text-3xl"/> : <CiMenuBurger className="text-2xl" />}    
+            </div>
             <div className="logo flex items-center">
                 <HiOutlineHashtag className="text-orange-500 text-2xl"/>
                 <p>{channelName}</p>
@@ -26,7 +30,7 @@ export default function header({url, userName, children, channelName}) {
                 <FiHelpCircle className="cursor-pointer text-2xl"/>
             </div>
         </div>
-            {children}
+            {/* {children} */}
         </>
     )
 }

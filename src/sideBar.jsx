@@ -3,27 +3,37 @@ import { Link } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { IoTicketOutline } from "react-icons/io5";
 import { FaHashtag, FaLess } from "react-icons/fa";
-export default function SideBar({ handleCreatingChannels, channels, inputSubject }) {
+export default function SideBar({ handleCreatingChannels, channels, inputSubject, handleChangingMenuState }) {
     const [isCreatedChannel, setIsCreatedChannel] = useState(false);
     const user = document.cookie.split(";")[0].split("=")[1];
     return(
-        <div className="side-bar min-w-[150px] w-[27vw] flex flex-col overflow-y-auto overflow-x-hidden text-white items-start bg-[#2B2D31] ">
+        <div className={`side-bar pb-4 w-[27vw] min-w-[180px] h-screen flex flex-col overflow-y-auto overflow-x-hidden text-white items-start bg-[#2B2D31]`}>
 
         <div className='w-[100%] h-[47%]'>
             {users.map((user, id) => 
-            <Link to={'/user/' + user.id} key={id}>         
-            <div className='flex justify-between items-center mt-4' key={user.id}>
+            <>
+            <Link to={'/user/' + user.id} key={'phone-'+id} onClick={() => handleChangingMenuState(false)} className='phone-link' >         
+            <div className='flex justify-between items-center mt-4'>
                <div className='flex items-center text-white'>
                 <img src={user.url} className='rounded-full w-9 mr-1' alt="" />
                 <p >{user.name}</p>
                </div> 
             </div>
             </Link>
+            <Link to={'/user/' + user.id} key={'pc-'+id} className='pc-link'>         
+            <div className='flex justify-between items-center mt-4' >
+               <div className='flex items-center text-white'>
+                <img src={user.url} className='rounded-full w-9 mr-1' alt="" />
+                <p >{user.name}</p>
+               </div> 
+            </div>
+            </Link>
+            </>
             )}
         </div>
         {isCreatedChannel && (
             <>
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="fixed inset-0 min-w-[293px] bg-black bg-opacity-50 flex items-center justify-center">
   <div className="w-3/5 bg-white rounded-lg shadow-xl p-6">
     <div className="flex justify-between items-center mb-4">
       <h2 className="text-xl font-bold text-gray-900">Create Ticket and ask</h2>
@@ -54,16 +64,28 @@ export default function SideBar({ handleCreatingChannels, channels, inputSubject
 </div>
             </>
         )}
-        <Link to='/channel/discussion' className='flex justify-start items-center no-underline ml-4 w-full hover:bg-black'>
+        <Link to='/channel/discussion' onClick={() => handleChangingMenuState(false)} className='flex phone-link  justify-start items-center no-underline ml-4 w-full hover:bg-black'>
        <FaHashtag /> <p className='ml-2'>discussion</p>
         </Link>
-        <Link to='/channel/math' className='flex justify-start items-center no-underline mt-4 ml-4 w-full hover:bg-black'>
+        <Link to='/channel/math' onClick={() => handleChangingMenuState(false)} className='flex phone-link  justify-start items-center no-underline mt-4 ml-4 w-full hover:bg-black'>
        <FaHashtag /> <p className='ml-2'>Mathematics</p>
         </Link>
-        <Link to='/channel/physics' className='flex justify-start items-center no-underline mt-4 ml-4 w-full hover:bg-black'>
+        <Link to='/channel/physics' onClick={() => handleChangingMenuState(false)} className='flex phone-link  justify-start items-center no-underline mt-4 ml-4 w-full hover:bg-black'>
        <FaHashtag /> <p className='ml-2'>Physics</p>
         </Link>
-        <Link to='/channel/science' className='flex justify-start items-center no-underline mt-4 ml-4 w-full hover:bg-black'>
+        <Link to='/channel/science' onClick={() => handleChangingMenuState(false)} className='flex phone-link  justify-start items-center no-underline mt-4 ml-4 w-full hover:bg-black'>
+       <FaHashtag /> <p className='ml-2'>Science</p>
+        </Link>..
+        <Link to='/channel/discussion'  className='flex pc-link  justify-start items-center no-underline ml-4 w-full hover:bg-black'>
+       <FaHashtag /> <p className='ml-2'>discussion</p>
+        </Link>
+        <Link to='/channel/math'  className='flex pc-link justify-start items-center no-underline mt-4 ml-4 w-full hover:bg-black'>
+       <FaHashtag /> <p className='ml-2'>Mathematics</p>
+        </Link>
+        <Link to='/channel/physics'  className='flex pc-link justify-start items-center no-underline mt-4 ml-4 w-full hover:bg-black'>
+       <FaHashtag /> <p className='ml-2'>Physics</p>
+        </Link>
+        <Link to='/channel/science' className='flex pc-link justify-start items-center no-underline mt-4 ml-4 w-full hover:bg-black'>
        <FaHashtag /> <p className='ml-2'>Science</p>
         </Link>
         <div onClick={() => setIsCreatedChannel(true)} className='pl-4 flex items-center mt-4 w-full cursor-pointer hover:bg-[#747474]'>
@@ -74,7 +96,28 @@ export default function SideBar({ handleCreatingChannels, channels, inputSubject
         
         {channels && channels.map( (channel) =>
         <>
-        <Link to={`/channel/${channel.id}`} className='flex w-full justify-start items-center no-underline mt-4  hover:bg-black'>
+        <Link to={`/channel/${channel.id}`} key={'phone-'+ channel.id} onClick={() => handleChangingMenuState(false)} className='flex phone-link w-full justify-start items-center no-underline mt-4  hover:bg-black'>
+        <FaHashtag /> <p className=' break-all'>{channel.subject} | {channel.owner}</p>
+         </Link>
+         <Link to={`/channel/${channel.id}`} key={'pc-'+ channel.id}  className='flex pc-link w-full justify-start items-center no-underline mt-4  hover:bg-black'>
+        <FaHashtag /> <p className=' break-all'>{channel.subject} | {channel.owner}</p>
+         </Link>
+        <Link to={`/channel/${channel.id}`} key={'phone-'+ channel.id} onClick={() => handleChangingMenuState(false)} className='flex phone-link w-full justify-start items-center no-underline mt-4  hover:bg-black'>
+        <FaHashtag /> <p className=' break-all'>{channel.subject} | {channel.owner}</p>
+         </Link>
+         <Link to={`/channel/${channel.id}`} key={'pc-'+ channel.id}  className='flex pc-link w-full justify-start items-center no-underline mt-4  hover:bg-black'>
+        <FaHashtag /> <p className=' break-all'>{channel.subject} | {channel.owner}</p>
+         </Link>
+        <Link to={`/channel/${channel.id}`} key={'phone-'+ channel.id} onClick={() => handleChangingMenuState(false)} className='flex phone-link w-full justify-start items-center no-underline mt-4  hover:bg-black'>
+        <FaHashtag /> <p className=' break-all'>{channel.subject} | {channel.owner}</p>
+         </Link>
+         <Link to={`/channel/${channel.id}`} key={'pc-'+ channel.id}  className='flex pc-link w-full justify-start items-center no-underline mt-4  hover:bg-black'>
+        <FaHashtag /> <p className=' break-all'>{channel.subject} | {channel.owner}</p>
+         </Link>
+        <Link to={`/channel/${channel.id}`} key={'phone-'+ channel.id} onClick={() => handleChangingMenuState(false)} className='flex phone-link w-full justify-start items-center no-underline mt-4  hover:bg-black'>
+        <FaHashtag /> <p className=' break-all'>{channel.subject} | {channel.owner}</p>
+         </Link>
+         <Link to={`/channel/${channel.id}`} key={'pc-'+ channel.id}  className='flex pc-link w-full justify-start items-center no-underline mt-4  hover:bg-black'>
         <FaHashtag /> <p className=' break-all'>{channel.subject} | {channel.owner}</p>
          </Link>
         </>

@@ -3,7 +3,7 @@ import SideBar from "./sideBar";
 import App from "./App";
 import "./App.css";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate,useParams } from "react-router-dom";
+import {  useNavigate,useParams } from "react-router-dom";
 import { FaUpload } from "react-icons/fa6";
 // import { socket } from './socket';
 import { io } from "socket.io-client";
@@ -12,8 +12,9 @@ import { IoMdSend } from "react-icons/io";
 export default function Channel() {
   const [messages, setMessages] = useState([]);
   const [channels , setChannels] = useState([]);
+  const [isClickedOnMenu, setIsClickedOnMenu] = useState(true);
   const navigate = useNavigate();
-  const inputSubject = useRef(null);
+  const elem = useRef(null);
   const { id } = useParams();
 
   const socket = io("/", {
@@ -32,6 +33,7 @@ export default function Channel() {
   const url = document.cookie
     ? document.cookie.split(";")[1].split("=")[1]
     : "";
+
 
   async function storeMessagesInDb(message, date, file) {
     const user = JSON.stringify({ message, name, url, date,  id })
@@ -52,18 +54,11 @@ export default function Channel() {
     }
   }
 
-  function handleCreatingChannels() {
-    socket.emit('channels', {
-              owner: name,
-              subject: inputSubject.current.value,
-              id:crypto.randomUUID(),
-             }, id)
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
     let image;
     let file = e.target.image.files[0];
+    console.log(file)
     console.log(file);
     console.log(e.target)
     console.log(e.target.image)
@@ -76,6 +71,9 @@ export default function Channel() {
     if(file) {
        image = await storeMessagesInDb(e.target.text.value, currentDate , file);
     }
+    else {
+      storeMessagesInDb(e.target.text.value, currentDate)
+    }
     console.log('the thing i want: ' + image);
     socket.emit("message", {
       message: e.target.text.value,
@@ -84,11 +82,13 @@ export default function Channel() {
       date: currentDate,
       image
     },  id);
-    file = "";
     input.current.value = "";
+    e.target.image.value = '';
   }
 
   useEffect(() => {
+    // elem.current.scrollIntoView()
+    // window.scrollBy(0, -30)
     socket.emit('join',  id)
     async function loadMessagesFromDb() {
       const messages = await fetch("/getdata", {
@@ -103,16 +103,7 @@ export default function Channel() {
       setMessages(messages);
     }
 
-    async function loadChannelsFromDb() {
-      try {
-        const res = await fetch('/getChannels');
-        const allChannels = await res.json();
-        setChannels(allChannels)
-      } catch(err) {
-        console.log('couldnt load channels');
-        console.log(err)
-      }
-    }
+    
 
     function onConnection() {
       console.log("connection");
@@ -130,7 +121,6 @@ export default function Channel() {
     }
 
     loadMessagesFromDb();
-    loadChannelsFromDb();
     socket.connect();
     socket.on("connect", onConnection);
     return () => {
@@ -139,24 +129,31 @@ export default function Channel() {
       socket.disconnect()
     };
   }, [id]);
+  
+  // useEffect(() => {
+  //   elem.current.scrollIntoView()
+  // },[])
 
   return (
-    <div className="flex bg-background h-screen">
-      <SideBar handleCreatingChannels={handleCreatingChannels} channels={channels} inputSubject={inputSubject} />
-      <div className="w-full flex flex-col ">
-        <Header channelName={id.length > 20? channels.owner : id}/>
-        <div className="messages overflow-y-auto h-[calc(100vh-(55px+100px))] bg-black pb-5">
+    
+    <div className="flex bg-background h-screen ">
+      {/* {isClickedOnMenu && (
+      // <SideBar handleCreatingChannels={handleCreatingChannels} channels={channels} inputSubject={inputSubject} />
+      )} */}
+      <div className=" flex w-full flex-col ">
+        {/* <Header channelName={id.length > 20? channels.owner : id}/> */}
+        <div ref={elem} className="messages w-full overflow-y-auto h-[calc(100vh-(55px+100px))] bg-black pb-5">
           {messages &&
             messages.map((message, index) => (
               <>
                 {(index > 0 && messages[index - 1].name) ===
                 messages[index].name && messages[index - 1].date === messages[index].date ? (
-                  <div className={`message w-full px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} flex flex-col text-white`}>
+                  <div key={crypto.randomUUID()} className={`message w-full px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} flex flex-col text-white`}>
                     <p className="break-all ml-[79px]">{message.message}</p>
-                    <img src={message.image} className="unstyle-images w-[50%] ml-16 block"/>
+                    <img src={message.image} className="unstyle-images w-[50%] phone-class ml-[5em] block"/>
                   </div>
                 ) : (
-                  <div className={`message w-full  px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} flex text-white`}>
+                  <div key={crypto.randomUUID()} className={`message w-full  px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} flex text-white`}>
                     <img
                       src={message.url}
                       className="rounded-[50%] w-[70px] block max-h-[72px] mr-3"
@@ -165,7 +162,7 @@ export default function Channel() {
                       <p className="font-thic text-xs"> {message.date} </p>
                       <p>{message.name}</p>
                       <p className="break-all">{message.message}</p>
-                      <img src={message.image} className="w-[50%]"/>
+                      <img src={message.image} className="w-[50%] phone-class bg-white"/>
                     </div>
                   </div>
                 )}
@@ -173,7 +170,7 @@ export default function Channel() {
             
             ))}
         </div>
-        <div className="form-test w-full bg-background p-4">
+        <div className="form-test w-full bg-background remove-padding p-4">
           <form
             onSubmit={handleSubmit}
             className="flex w-full items-center justify-between bg-gray-700 "

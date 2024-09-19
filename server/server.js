@@ -123,7 +123,7 @@ app.post('/storeuser', upload.single('file'), async (req, res, next) => {
 
 app.post('/getdata', async (req, res) => {
     try{
-        const data = await messages.find({ id: req.body. id}).exec();
+        const data = await messages.find({ id: req.body.id}).exec();
         res.status(200).json(data)
     }
     catch(err) {

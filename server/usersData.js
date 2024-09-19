@@ -8,6 +8,7 @@ const userSchema = mongoose.Schema({
     message: String,
     date: String,
     id: String,
+    isAdmin:Boolean,
     image: String,
 })
 

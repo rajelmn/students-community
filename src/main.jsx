@@ -23,11 +23,11 @@ const router = createBrowserRouter([
         path: "user/:userId",
         element: <Main />,
       },
+      {
+        path: "/channel/:id",
+        element: <Channel/>,
+      },
     ],
-  },
-  {
-    path: "/channel/:id",
-    element: <Channel/>,
   },
   {
     path: "/register",

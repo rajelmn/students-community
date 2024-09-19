@@ -14,12 +14,20 @@
     scrollbar-width: thin;
 }
 
-body {
-    overflow:hidden
+  body, html{
+    overflow-y:hidden 
+}  
+
+.burger-menu {
+    display: none;
 }
 
 .unstyled-images {
     margin-left:70px !important;
+}
+
+.phone-link {
+    display: none;
 }
 
 /* .messages img {
@@ -27,16 +35,30 @@ body {
     max-height: 72px;
 } */
 @media  (max-width : 600px) {
+    .remove-padding {
+        padding:0 !important;
+    }
+    .pc-link {
+        display: none;
+    }
+    .phone-link {
+        display: flex;
+    }
+    .burger-menu {
+        display: flex;
+    }
     xinput {
         color: white;
     }
     .form-test{
         height:140px !important;
     }
-    /* .header {
-        display: none;
-    } */
+ 
      .icons {
         display: none;
+     }
+
+     .phone-class {
+        width:initial !important;
      }
 }
