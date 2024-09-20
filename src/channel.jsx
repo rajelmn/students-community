@@ -13,6 +13,7 @@ export default function Channel() {
   const [messages, setMessages] = useState([]);
   const [channels , setChannels] = useState([]);
   const [isClickedOnMenu, setIsClickedOnMenu] = useState(true);
+  const [typingUser, setTyingUser] = useState([]);
   const navigate = useNavigate();
   const elem = useRef(null);
   const { id } = useParams();
@@ -52,6 +53,14 @@ export default function Channel() {
     } catch (err) {
       console.error(err);
     }
+  }
+
+  function handleInputChange(e) {
+    if(typingUser.includes(name)) return;
+    if(e.target.value === '') {
+      return setTyingUser([]);
+    }
+    socket.emit('change', name, id)
   }
 
   async function handleSubmit(e) {
@@ -118,6 +127,10 @@ export default function Channel() {
         console.log('on chat messages')
         setMessages((prev) => [...prev, msg]);
       });
+
+      socket.on('change', (name) => {
+        setTyingUser(prev => [...prev, name])
+      })
     }
 
     loadMessagesFromDb();
@@ -135,25 +148,47 @@ export default function Channel() {
   // },[])
 
   return (
-    
     <div className="flex bg-background h-screen ">
       {/* {isClickedOnMenu && (
       // <SideBar handleCreatingChannels={handleCreatingChannels} channels={channels} inputSubject={inputSubject} />
       )} */}
       <div className=" flex w-full flex-col ">
         {/* <Header channelName={id.length > 20? channels.owner : id}/> */}
-        <div ref={elem} className="messages w-full overflow-y-auto h-[calc(100vh-(55px+100px))] bg-black pb-5">
+        <div
+          ref={elem}
+          className="messages w-full overflow-y-auto h-[calc(100vh-(55px+100px))] bg-black pb-5"
+        >
           {messages &&
             messages.map((message, index) => (
               <>
                 {(index > 0 && messages[index - 1].name) ===
-                messages[index].name && messages[index - 1].date === messages[index].date ? (
-                  <div key={crypto.randomUUID()} className={`message w-full px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} flex flex-col text-white`}>
+                  messages[index].name &&
+                messages[index - 1].date === messages[index].date ? (
+                  <div
+                    key={crypto.randomUUID()}
+                    className={`message w-full px-3 ${
+                      messages[index + 1] &&
+                      messages[index + 1].name === messages[index].name
+                        ? ""
+                        : "mb-4"
+                    } flex flex-col text-white`}
+                  >
                     <p className="break-all ml-[79px]">{message.message}</p>
-                    <img src={message.image} className="unstyle-images w-[50%] phone-class ml-[5em] block"/>
+                    <img
+                      src={message.image}
+                      className="unstyle-images w-[50%] phone-class ml-[5em] block"
+                    />
                   </div>
                 ) : (
-                  <div key={crypto.randomUUID()} className={`message w-full  px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} flex text-white`}>
+                  <div
+                    key={crypto.randomUUID()}
+                    className={`message w-full  px-3 ${
+                      messages[index + 1] &&
+                      messages[index + 1].name === messages[index].name
+                        ? ""
+                        : "mb-4"
+                    } flex text-white`}
+                  >
                     <img
                       src={message.url}
                       className="rounded-[50%] w-[70px] block max-h-[72px] mr-3"
@@ -162,12 +197,14 @@ export default function Channel() {
                       <p className="font-thic text-xs"> {message.date} </p>
                       <p>{message.name}</p>
                       <p className="break-all">{message.message}</p>
-                      <img src={message.image} className="w-[50%] phone-class bg-white"/>
+                      <img
+                        src={message.image}
+                        className="w-[50%] phone-class bg-white"
+                      />
                     </div>
                   </div>
                 )}
               </>
-            
             ))}
         </div>
         <div className="form-test w-full bg-background remove-padding p-4">
@@ -177,16 +214,23 @@ export default function Channel() {
           >
             <div className="upload-image pl-4">
               <label htmlFor="upload-file">
-            <FaUpload className="text-white text-2xl" />
+                <FaUpload className="text-white text-2xl" />
               </label>
-            <input type="file" id="upload-file" className="hidden" name="image"/>
+              <input
+                type="file"
+                id="upload-file"
+                className="hidden"
+                name="image"
+              />
             </div>
-            
+
             <input
               type="text"
               name="text"
               ref={input}
               placeholder="write message"
+              // onChange={handleInputChange}
+              onChange={handleInputChange}
               className="outline-none bg-gray-700 text-white transparent w-[90%] py-2 rounded-l-md"
             />
             {/* <IoMdSend className='text-white cursor-pointer text-2xl' onClick={handleSubmit}/> */}
@@ -194,6 +238,18 @@ export default function Channel() {
               <IoMdSend className="text-white cursor-pointer text-2xl" />
             </button>
           </form>
+          {typingUser.length ? (
+            <p className="text-white">
+              {typingUser
+                .filter((item) => item !== name)
+                .reduce(
+                  (accmulator, previous) => previous + "," + accmulator ,''
+                )}{" "}
+              is typing...
+            </p>
+          ) : (
+            <></>
+          )}
         </div>
       </div>
     </div>

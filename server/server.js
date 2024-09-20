@@ -44,6 +44,11 @@ io.on('connection', (socket) =>{
         io.to(id).emit('chat', msg)
     })
 
+    socket.on('change', (name, id) => {
+        console.log(name + 'is typing')
+        io.to(id).emit('change', name)
+    })
+
     socket.on('channels', async (channelDetail, id) => {
         const channel =  await new channels(channelDetail);
         await channel.save();
