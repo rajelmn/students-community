@@ -5,8 +5,10 @@ import "./App.css";
 import { useEffect, useRef, useState } from "react";
 import {  useNavigate,useParams } from "react-router-dom";
 import { FaUpload } from "react-icons/fa6";
+import { FaReply } from "react-icons/fa";
 // import { socket } from './socket';
 import { io } from "socket.io-client";
+import { MdDelete,MdModeEdit } from "react-icons/md";
 import { IoMdSend } from "react-icons/io";
 
 export default function Channel() {
@@ -35,13 +37,13 @@ export default function Channel() {
     : "";
 
 
-  async function storeMessagesInDb(message, date, file) {
-    const user = JSON.stringify({ message, name, url, date,  id })
+  async function storeMessagesInDb(message, date, file, messageId) {
+    const user = JSON.stringify({ message, name, url, date,  id , messageId})
     const formData = new FormData();
     formData.append('user', user);
     formData.append('file',file )
     try {
-       const response = await fetch("/storemessage", {
+       const response = await fetch("/api/storemessage", {
         method: "post",
         body: formData,
       });
@@ -54,33 +56,40 @@ export default function Channel() {
     }
   }
 
+  async function handleDeleteMessage(messageId) {
+    try {
+      const deletedMessage = messages.filter((message) => message.messageId == messageId);
+      console.log(deletedMessage)
+      socket.emit('delete',deletedMessage, id);
+    } catch(err){
+      console.log(err)
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     let image;
     let file = e.target.image.files[0];
-    console.log(file)
-    console.log(file);
-    console.log(e.target)
-    console.log(e.target.image)
     const date = new Date();
     const currentDate = date.toLocaleTimeString("en-mr", {
       hour: "numeric",
       minute: "numeric",
       hour12: true,
     });
+    const messageId = crypto.randomUUID();
     if(file) {
        image = await storeMessagesInDb(e.target.text.value, currentDate , file);
     }
     else {
-      storeMessagesInDb(e.target.text.value, currentDate)
+      storeMessagesInDb(e.target.text.value, currentDate,undefined, messageId)
     }
-    console.log('the thing i want: ' + image);
     socket.emit("message", {
       message: e.target.text.value,
       name,
       url,
       date: currentDate,
-      image
+      image,
+      messageId
     },  id);
     input.current.value = "";
     e.target.image.value = '';
@@ -91,7 +100,7 @@ export default function Channel() {
     // window.scrollBy(0, -30)
     socket.emit('join',  id)
     async function loadMessagesFromDb() {
-      const messages = await fetch("/getdata", {
+      const messages = await fetch("/api/getdata", {
         method: "post",
         headers: {
           "Content-Type": "application/json",
@@ -118,6 +127,11 @@ export default function Channel() {
         console.log('on chat messages')
         setMessages((prev) => [...prev, msg]);
       });
+      socket.on('delete', (msg) => {
+        console.log(messages.filter((message) => message.messageId !== msg.messageId))
+        setMessages((prev) => prev.filter((message) => message.messageId !== msg.messageId));
+        console.log('deleting')
+      })
     }
 
     loadMessagesFromDb();
@@ -146,14 +160,20 @@ export default function Channel() {
           {messages &&
             messages.map((message, index) => (
               <>
+              {/* {console.log(message)} */}
                 {(index > 0 && messages[index - 1].name) ===
                 messages[index].name && messages[index - 1].date === messages[index].date ? (
-                  <div key={crypto.randomUUID()} className={`message w-full px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} flex flex-col text-white`}>
+                  <div key={crypto.randomUUID()} className={`message relative w-full px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} hover:bg-[#151617] flex flex-col text-white`}>
                     <p className="break-all ml-[79px]">{message.message}</p>
                     <img src={message.image} className="unstyle-images w-[50%] phone-class ml-[5em] block"/>
+                    <div className="absolute hidden menu items-center justify-between  bg-[#313338] right-0 top-0 cursor-pointer">
+                      <FaReply className="m-2" />
+                      <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>
+                      <MdModeEdit className="m-2" />
+                    </div>
                   </div>
                 ) : (
-                  <div key={crypto.randomUUID()} className={`message w-full  px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} flex text-white`}>
+                  <div key={crypto.randomUUID()} className={` relative message w-full hover:bg-[#151617]  px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} flex text-white`}>
                     <img
                       src={message.url}
                       className="rounded-[50%] w-[70px] block max-h-[72px] mr-3"
@@ -163,6 +183,11 @@ export default function Channel() {
                       <p>{message.name}</p>
                       <p className="break-all">{message.message}</p>
                       <img src={message.image} className="w-[50%] phone-class bg-white"/>
+                    </div>
+                    <div className="absolute hidden menu items-center justify-between  bg-[#313338] right-0 top-0 cursor-pointer">
+                      <FaReply className="m-2" />
+                      <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>
+                      <MdModeEdit className="m-2" />
                     </div>
                   </div>
                 )}

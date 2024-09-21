@@ -9,6 +9,7 @@ const userSchema = mongoose.Schema({
     date: String,
     id: String,
     isAdmin:Boolean,
+    messageId: String,
     image: String,
 })
 

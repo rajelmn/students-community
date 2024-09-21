@@ -39,6 +39,10 @@ io.on('connection', (socket) =>{
     socket.on('join', (id) => {
         socket.join(id)
     })
+    socket.on('delete', (msg, id) => {
+        console.log('delete')
+        io.to(id).emit('delete', msg)
+    })
     socket.on('message', (msg,  id) => {
         console.log('emitting messasge')
         io.to(id).emit('chat', msg)
@@ -68,6 +72,7 @@ app.post('/storemessage', upload.single('file'),async (req, res) => {
         //  await user.save();
         //  res.send(user);
         const body = JSON.parse(req.body.user);
+        console.log
         let imageUrl;
         if(req.file) {
             const image = await cloudinary.uploader.upload(req.file?.path);
@@ -80,6 +85,7 @@ app.post('/storemessage', upload.single('file'),async (req, res) => {
                  url: body.url,
                  date: body.date,
                  id: body.id,
+                 messageId: body.messageId,
                  image: imageUrl
              }
          )

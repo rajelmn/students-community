@@ -30,6 +30,10 @@
     display: none;
 }
 
+.message:hover .menu {
+    display: flex;
+}
+
 /* .messages img {
     width:70px !important;
     max-height: 72px;
