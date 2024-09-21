@@ -39,9 +39,11 @@ io.on('connection', (socket) =>{
     socket.on('join', (id) => {
         socket.join(id)
     })
-    socket.on('delete', (msg, id) => {
-        console.log('delete')
-        io.to(id).emit('delete', msg)
+    socket.on('delete', async (msg, id) => {
+        console.log('delete');
+        console.log(msg)
+        io.to(id).emit('delete', msg);
+        await messages.findOneAndDelete(msg[0])
     })
     socket.on('message', (msg,  id) => {
         console.log('emitting messasge')

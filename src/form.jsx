@@ -18,7 +18,7 @@ export default function FormPage() {
         formData.append('user', user);        
         console.log(e.target.myImage.files[0])
         try {
-            const userData = await fetch('/storeuser', {
+            const userData = await fetch('/api/storeuser', {
                 method: "POSt", 
                 body: formData
             }).then(res => res.json()).catch(err => console.log(err));

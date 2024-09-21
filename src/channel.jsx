@@ -8,7 +8,7 @@ import { FaUpload } from "react-icons/fa6";
 import { FaReply } from "react-icons/fa";
 // import { socket } from './socket';
 import { io } from "socket.io-client";
-import { MdDelete,MdModeEdit } from "react-icons/md";
+import { MdDelete,MdModeEdit,MdOutlineAddReaction } from "react-icons/md";
 import { IoMdSend } from "react-icons/io";
 
 export default function Channel() {
@@ -58,7 +58,7 @@ export default function Channel() {
 
   async function handleDeleteMessage(messageId) {
     try {
-      const deletedMessage = messages.filter((message) => message.messageId == messageId);
+      const deletedMessage = messages.filter((message) => message.messageId === messageId);
       console.log(deletedMessage)
       socket.emit('delete',deletedMessage, id);
     } catch(err){
@@ -128,10 +128,14 @@ export default function Channel() {
         setMessages((prev) => [...prev, msg]);
       });
       socket.on('delete', (msg) => {
-        console.log(messages.filter((message) => message.messageId !== msg.messageId))
-        setMessages((prev) => prev.filter((message) => message.messageId !== msg.messageId));
-        console.log('deleting')
-      })
+        console.log(msg)
+        console.log(msg[0].messageId)
+        setMessages((prevMessages) => {
+          console.log(prevMessages.filter((message) => message.messageId !== msg[0].messageId));
+          return prevMessages.filter((message) => message.messageId !== msg[0].messageId);
+        });
+        console.log('deleting');
+      });
     }
 
     loadMessagesFromDb();
@@ -140,6 +144,8 @@ export default function Channel() {
     return () => {
       socket.off("connect", onConnection);
       socket.off("chat");
+      socket.off('delete'); 
+      socket.disconnect();
       socket.disconnect()
     };
   }, [id]);
@@ -166,9 +172,10 @@ export default function Channel() {
                   <div key={crypto.randomUUID()} className={`message relative w-full px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} hover:bg-[#151617] flex flex-col text-white`}>
                     <p className="break-all ml-[79px]">{message.message}</p>
                     <img src={message.image} className="unstyle-images w-[50%] phone-class ml-[5em] block"/>
-                    <div className="absolute hidden menu items-center justify-between  bg-[#313338] right-0 top-0 cursor-pointer">
+                    <div className="absolute hidden pl-3 menu items-center justify-between  bg-[#313338] right-0 top-0 cursor-pointer">
+                      <MdOutlineAddReaction className="mr-2"/>
                       <FaReply className="m-2" />
-                      <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>
+                      {message.name === name && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
                       <MdModeEdit className="m-2" />
                     </div>
                   </div>
@@ -184,9 +191,10 @@ export default function Channel() {
                       <p className="break-all">{message.message}</p>
                       <img src={message.image} className="w-[50%] phone-class bg-white"/>
                     </div>
-                    <div className="absolute hidden menu items-center justify-between  bg-[#313338] right-0 top-0 cursor-pointer">
+                    <div className="absolute hidden pl-3 menu items-center justify-between  bg-[#313338] right-0 top-0 cursor-pointer">
+                    <MdOutlineAddReaction className="mr-2" />
                       <FaReply className="m-2" />
-                      <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>
+                    {message.name === name && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
                       <MdModeEdit className="m-2" />
                     </div>
                   </div>

@@ -33,7 +33,7 @@ export default function SideBar({ handleCreatingChannels, channels, inputSubject
         </div>
         {isCreatedChannel && (
             <>
-        <div className="fixed inset-0 min-w-[293px] bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="fixed z-50 inset-0 min-w-[293px] bg-black bg-opacity-50 flex items-center justify-center">
   <div className="w-3/5 bg-white rounded-lg shadow-xl p-6">
     <div className="flex justify-between items-center mb-4">
       <h2 className="text-xl font-bold text-gray-900">Create Ticket and ask</h2>
