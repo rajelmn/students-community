@@ -43,7 +43,7 @@ export default function Channel() {
     formData.append('user', user);
     formData.append('file',file )
     try {
-       const response = await fetch("/api/storemessage", {
+       const response = await fetch("/storemessage", {
         method: "post",
         body: formData,
       });
@@ -100,7 +100,7 @@ export default function Channel() {
     // window.scrollBy(0, -30)
     socket.emit('join',  id)
     async function loadMessagesFromDb() {
-      const messages = await fetch("/api/getdata", {
+      const messages = await fetch("/getdata", {
         method: "post",
         headers: {
           "Content-Type": "application/json",
