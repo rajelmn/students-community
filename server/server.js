@@ -50,6 +50,12 @@ io.on('connection', (socket) =>{
         io.to(id).emit('chat', msg)
     })
 
+    socket.on('edit', async (newMsg, oldMessageId, id) => {
+        console.log('edited with the new msg', newMsg)
+        io.to(id).emit('edit', newMsg, oldMessageId)
+        await messages.findOneAndUpdate({messageId:oldMessageId}, {message:newMsg, isEdit:false})
+    })
+
     socket.on('channels', async (channelDetail, id) => {
         const channel =  await new channels(channelDetail);
         await channel.save();
