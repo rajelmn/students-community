@@ -13,10 +13,11 @@ export default function Channel() {
   const [messages, setMessages] = useState([]);
   const [channels , setChannels] = useState([]);
   const [isClickedOnMenu, setIsClickedOnMenu] = useState(true);
-  const [typingUser, setTyingUser] = useState([]);
+  const [typingUser, setTypingUser] = useState([]);
   const navigate = useNavigate();
   const elem = useRef(null);
   const { id } = useParams();
+  console.log(typingUser)
 
   const socket = io("/", {
     transports: ["websocket"],
@@ -56,10 +57,8 @@ export default function Channel() {
   }
 
   function handleInputChange(e) {
-    if(typingUser.includes(name)) return;
-    if(e.target.value === '') {
-      return setTyingUser([]);
-    }
+    // if(typingUser.includes(name)) return;
+  
     socket.emit('change', name, id)
   }
 
@@ -129,7 +128,21 @@ export default function Channel() {
       });
 
       socket.on('change', (name) => {
-        setTyingUser(prev => [...prev, name])
+        console.log(name);
+        setTypingUser(prev => {
+          if(prev.includes(name)) {
+           console.log('prev includes')
+            setTimeout(() => {
+              console.log('timeout ohhh')
+              setTypingUser(prev => prev.filter(item => item !== name))
+            }, 3000);
+            return prev
+          }else {
+            console.log('non condition is met')
+            return [...prev, name]
+          }
+        })
+       
       })
     }
 
@@ -238,14 +251,16 @@ export default function Channel() {
               <IoMdSend className="text-white cursor-pointer text-2xl" />
             </button>
           </form>
-          {typingUser.length ? (
+          {typingUser.length >= 1 ? (
             <p className="text-white">
               {typingUser
-                .filter((item) => item !== name)
+                .filter(user => user !== name)
                 .reduce(
                   (accmulator, previous) => previous + "," + accmulator ,''
                 )}{" "}
-              is typing...
+                {typingUser[0] !== name &&<> is typing..</>}
+                {/* is typing.. */}
+              
             </p>
           ) : (
             <></>

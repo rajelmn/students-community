@@ -61,4 +61,7 @@
      .phone-class {
         width:initial !important;
      }
+     .h-\[calc\(100vh-\(55px\+100px\)\)\] {
+        height: calc(100vh - 173px);
+    }
 }
