@@ -10,7 +10,7 @@ import { useRef } from 'react';
 export default function App() {
   const [isClickedOnMenu, setIsClickedOnMenu] = useState(true);
   const [channels, setChannels] = useState([]);
-  console.log(isClickedOnMenu, 'isclicked')
+  // console.log(isClickedOnMenu, 'isclicked')
   const { id } = useParams();
   const inputSubject = useRef(null);
   const socket = io("/", {
@@ -20,10 +20,10 @@ export default function App() {
   const name = document.cookie
     ? document.cookie.split(";")[0].split("=")[1]
     : "";
-  console.log(id)
+  // console.log(id)
   function handleBurgerMenu() {
     console.log('fires')
-    console.log(isClickedOnMenu)
+    // console.log(isClickedOnMenu)
     setIsClickedOnMenu(prev => !prev)
   }
   
@@ -48,9 +48,9 @@ export default function App() {
     }
     
     function onConnection() {
-      console.log("connection");
+      // console.log("connection");
       socket.on('channels', (channelDetail) => {
-        console.log('on channels')
+        // console.log('on channels')
         setChannels(prev => [
           ...prev,
           channelDetail

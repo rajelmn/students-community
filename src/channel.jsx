@@ -4,11 +4,12 @@ import App from "./App";
 import "./App.css";
 import { useEffect, useRef, useState } from "react";
 import {  useNavigate,useParams } from "react-router-dom";
+import 'katex/dist/katex.min.css';
+import { InlineMath, BlockMath } from 'react-katex';
+import { io } from "socket.io-client";
 import { FaUpload } from "react-icons/fa6";
 import { FaReply } from "react-icons/fa";
-// import { socket } from './socket';
-import { io } from "socket.io-client";
-import { MdDelete,MdModeEdit,MdOutlineAddReaction } from "react-icons/md";
+import { MdDelete,MdModeEdit,MdOutlineAddReaction,MdVerified } from "react-icons/md";
 import { IoMdSend } from "react-icons/io";
 
 export default function Channel() {
@@ -18,6 +19,7 @@ export default function Channel() {
   const navigate = useNavigate();
   const elem = useRef(null);
   const { id } = useParams();
+  console.log(messages)
 
   const socket = io("/", {
     transports: ["websocket"],
@@ -37,8 +39,8 @@ export default function Channel() {
     : "";
 
 
-  async function storeMessagesInDb(message, date, file, messageId) {
-    const user = JSON.stringify({ message, name, url, date,  id , messageId})
+  async function storeMessagesInDb(message, date, file, messageId, isLatex) {
+    const user = JSON.stringify({ message, name, url, date,  id , messageId, isLatex})
     const formData = new FormData();
     formData.append('user', user);
     formData.append('file',file )
@@ -76,14 +78,29 @@ export default function Channel() {
       minute: "numeric",
       hour12: true,
     });
+    const isLatex = e.target.text.value.match(/[$]/gi)?.length === 2
     const messageId = crypto.randomUUID();
     if(file) {
-       image = await storeMessagesInDb(e.target.text.value, currentDate , file);
+      image = await storeMessagesInDb(e.target.text.value, currentDate , file, isLatex);
     }
     else {
-      storeMessagesInDb(e.target.text.value, currentDate,undefined, messageId)
+      storeMessagesInDb(e.target.text.value, currentDate,undefined, messageId, isLatex)
     }
+  //   if(e.target.text.value.match(/[$]/gi)?.length === 2) {
+  //     // socket.emit('message', {
+  //     //   isLatex:true,
+  //     //   message: e.target.text.value.replace(/[$]/gi, ''),
+  //     //   image,
+  //     // }, id)
+  //     // return
+  //     setMessages(prev => [...prev, {
+  //       isLatex: true,
+  //       message:e.target.text.value.replace(/[$]/gi, '')
+  //     }])
+  //     return
+  // }
     socket.emit("message", {
+      isLatex,
       message: e.target.text.value,
       name,
       url,
@@ -167,9 +184,9 @@ export default function Channel() {
             messages.map((message, index) => (
               <>
               {/* {console.log(message)} */}
-                {(index > 0 && messages[index - 1].name) ===
+                {(!message.isLatex && index > 0 && messages[index - 1].name) ===
                 messages[index].name && messages[index - 1].date === messages[index].date ? (
-                  <div key={crypto.randomUUID()} className={`message relative w-full px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} hover:bg-[#151617] flex flex-col text-white`}>
+                  <div key={crypto.randomUUID()} className={`message relative w-full px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? 'mb-0': 'mb-4'} hover:bg-[#151617] flex flex-col text-white`}>
                     <p className="break-all ml-[79px]">{message.message}</p>
                     <img src={message.image} className="unstyle-images w-[50%] phone-class ml-[5em] block"/>
                     <div className="absolute hidden pl-3 menu items-center justify-between  bg-[#313338] right-0 top-0 cursor-pointer">
@@ -179,8 +196,44 @@ export default function Channel() {
                       <MdModeEdit className="m-2" />
                     </div>
                   </div>
-                ) : (
-                  <div key={crypto.randomUUID()} className={` relative message w-full hover:bg-[#151617]  px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} flex text-white`}>
+                ) : message.isLatex ? (
+                  <>
+                  <div className={` relative message w-full hover:bg-[#151617]  px-3 my-3 flex text-white`}>
+                  <img
+                      src={message.url}
+                      className="rounded-[50%] w-[70px] block max-h-[72px] mr-3"
+                    />
+                    <div className="flex flex-col justify-start">
+                      <p className="font-thic text-xs"> {message.date} </p>
+                      <p>{message.name}</p>
+                      <p className="break-all">{message.message}</p>
+                      <img src={message.image} className="w-[50%] phone-class bg-white"/>
+                    </div>
+                    <div className="absolute hidden pl-3 menu items-center justify-between  bg-[#313338] right-0 top-0 cursor-pointer">
+                    <MdOutlineAddReaction className="mr-2" />
+                      <FaReply className="m-2" />
+                    {message.name === name && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
+                      <MdModeEdit className="m-2" />
+                    </div>
+                  </div>
+                  <div className={` relative message w-full hover:bg-[#151617]  px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} flex text-white`}>
+                    <img
+                      src="../images/new-logo.png"
+                      className="rounded-[50%] w-[70px] block max-h-[72px] mr-3"
+                    />
+                    <div className="">
+                      <span>mauriTeX</span> <MdVerified className="inline" /> 
+                      {console.log(message)}
+                      <span className="text-xs ml-1 text-orange-500">used by {message.name}</span>
+                      <span className="text-5xl overflow-auto break-all">
+                      <BlockMath math={message.message.replace(/[$]/gi, '')}/>
+                      </span>
+                    </div>
+                  </div>
+                  </>
+                ):
+                 (
+                  <div className={` relative message w-full hover:bg-[#151617]  px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} flex text-white`}>
                     <img
                       src={message.url}
                       className="rounded-[50%] w-[70px] block max-h-[72px] mr-3"
@@ -232,3 +285,6 @@ export default function Channel() {
     </div>
   );
 }
+
+
+//border-[3px] border-solid border-white

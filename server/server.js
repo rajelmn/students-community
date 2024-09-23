@@ -74,8 +74,9 @@ app.post('/storemessage', upload.single('file'),async (req, res) => {
         //  await user.save();
         //  res.send(user);
         const body = JSON.parse(req.body.user);
-        console.log
+        console.log(body, 'body')
         let imageUrl;
+        console.log(req.body.isLatex, 'latex')
         if(req.file) {
             const image = await cloudinary.uploader.upload(req.file?.path);
              imageUrl = image?.secure_url
@@ -87,6 +88,7 @@ app.post('/storemessage', upload.single('file'),async (req, res) => {
                  url: body.url,
                  date: body.date,
                  id: body.id,
+                 isLatex:body.isLatex,
                  messageId: body.messageId,
                  image: imageUrl
              }

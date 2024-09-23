@@ -10,6 +10,7 @@ const userSchema = mongoose.Schema({
     id: String,
     isAdmin:Boolean,
     messageId: String,
+    isLatex: Boolean,
     image: String,
 })
 
