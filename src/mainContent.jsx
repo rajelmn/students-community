@@ -37,7 +37,7 @@ export default function Main() {
     
                     <li className='mt-6'>visit {<Link className="text-[orange]" to="/channel/math">#math</Link>} for math discussion</li>
                     <li className='mt-6'> visit {<Link className="text-[orange]" to="/channel/physics">#physics</Link>} for physics discussion</li>
-                    <BlockMath math="\\int_0^\\infty x^2 dx"/>
+                    {/* <BlockMath math="\\int_0^\\infty x^2 dx"/> */}
                     </ul>
                 </>
             )  }
