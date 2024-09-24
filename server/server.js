@@ -50,6 +50,12 @@ io.on('connection', (socket) =>{
         io.to(id).emit('chat', msg)
     })
 
+    socket.on('edit', async (newMsg, oldMessageId, id) => {
+        console.log('edited with the new msg', newMsg)
+        io.to(id).emit('edit', newMsg, oldMessageId)
+        await messages.findOneAndUpdate({messageId:oldMessageId}, {message:newMsg, isEdit:false})
+    })
+
     socket.on('channels', async (channelDetail, id) => {
         const channel =  await new channels(channelDetail);
         await channel.save();
@@ -94,7 +100,10 @@ app.post('/storemessage', upload.single('file'),async (req, res) => {
              }
          )
          await user.save();
-         console.log(user)
+         console.log(user);
+         if(!imageUrl) {
+            return res.status(401).json({message: "no image is sent"})
+         }
          res.status(200).json(imageUrl)
     }catch(err) {
         console.log('oops');

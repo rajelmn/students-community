@@ -38,7 +38,7 @@ export default function App() {
   useEffect(() => {
     async function loadChannelsFromDb() {
       try {
-        const res = await fetch('/getChannels');
+        const res = await fetch('/api/getChannels');
         const allChannels = await res.json();
         setChannels(allChannels)
       } catch(err) {

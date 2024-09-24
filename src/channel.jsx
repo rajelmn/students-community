@@ -45,7 +45,7 @@ export default function Channel() {
     formData.append('user', user);
     formData.append('file',file )
     try {
-       const response = await fetch("/storemessage", {
+       const response = await fetch("/api/storemessage", {
         method: "post",
         body: formData,
       });
@@ -64,6 +64,37 @@ export default function Channel() {
       console.log(deletedMessage)
       socket.emit('delete',deletedMessage, id);
     } catch(err){
+      console.log(err)
+    }
+  }
+
+  function handleEdit(id) {
+    const editedMessage = messages.filter(item => item.messageId === id);
+    if(editedMessage.isEdit) {
+      setMessages(prev => [
+        ...prev.map(item => {
+          if(item.messageId === id) {
+            return {...item, isEdit: false}
+          }
+          return item
+        })
+      ])
+    }
+    setMessages(prev => [
+      ...prev.map(item => {
+        if(item.messageId === id) {
+          return {...item, isEdit: true}
+        }
+        return item
+      })
+    ])
+  }
+
+  function handleSubmitEdit(newMsg,messageId) {
+    try {
+      console.log('sumbitting')
+      socket.emit('edit',newMsg, messageId, id)
+    } catch(err) {
       console.log(err)
     }
   }
@@ -106,18 +137,16 @@ export default function Channel() {
       url,
       date: currentDate,
       image,
-      messageId
+      messageId,
     },  id);
     input.current.value = "";
     e.target.image.value = '';
   }
 
   useEffect(() => {
-    // elem.current.scrollIntoView()
-    // window.scrollBy(0, -30)
     socket.emit('join',  id)
     async function loadMessagesFromDb() {
-      const messages = await fetch("/getdata", {
+      const messages = await fetch("/api/getdata", {
         method: "post",
         headers: {
           "Content-Type": "application/json",
@@ -145,14 +174,27 @@ export default function Channel() {
         setMessages((prev) => [...prev, msg]);
       });
       socket.on('delete', (msg) => {
+        console.log('deleting')
         console.log(msg)
         console.log(msg[0].messageId)
         setMessages((prevMessages) => {
           console.log(prevMessages.filter((message) => message.messageId !== msg[0].messageId));
           return prevMessages.filter((message) => message.messageId !== msg[0].messageId);
         });
-        console.log('deleting');
       });
+      socket.on('edit', (newMsg, oldMessageId) => {
+        console.log(newMsg);
+        console.log(oldMessageId)
+        console.log('editing');
+        setMessages(prev => [
+          ...prev.map(item => {
+            if(item.messageId === oldMessageId) {
+              return {...item, message:newMsg, isEdit: false};
+            }
+            return item;
+          })
+        ])
+      })
     }
 
     loadMessagesFromDb();
@@ -166,34 +208,40 @@ export default function Channel() {
       socket.disconnect()
     };
   }, [id]);
-  
-  // useEffect(() => {
-  //   elem.current.scrollIntoView()
-  // },[])
+
 
   return (
     
     <div className="flex bg-background h-screen ">
-      {/* {isClickedOnMenu && (
-      // <SideBar handleCreatingChannels={handleCreatingChannels} channels={channels} inputSubject={inputSubject} />
-      )} */}
       <div className=" flex w-full flex-col ">
-        {/* <Header channelName={id.length > 20? channels.owner : id}/> */}
         <div ref={elem} className="messages w-full overflow-y-auto h-[calc(100vh-(55px+100px))] bg-black pb-5">
           {messages &&
             messages.map((message, index) => (
               <>
-              {/* {console.log(message)} */}
                 {(!message.isLatex && index > 0 && messages[index - 1].name) ===
                 messages[index].name && messages[index - 1].date === messages[index].date ? (
-                  <div key={crypto.randomUUID()} className={`message relative w-full px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? 'mb-0': 'mb-4'} hover:bg-[#151617] flex flex-col text-white`}>
-                    <p className="break-all ml-[79px]">{message.message}</p>
+                  <div key={crypto.randomUUID()} className={`message relative w-full px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} hover:bg-[#151617] flex flex-col text-white`}>
+                    {console.log(message.isEdit)}
+                     {message.isEdit ? (
+                       <form onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSubmitEdit(e.target.edit.value, message.messageId)
+                      }}>
+                        <input defaultValue={message.message} name="edit" className="ml-[79px] break-all block text-white outline-none bg-background" type="text" />
+                      </form>
+                      ): (
+                        <>
+                        <p className="break-all ml-[79px]">{message.message}</p>
+                        {message.isEdit === false && <p className="ml-[79px] text-xs">(edited)</p>}
+                        </>
+                      )}
                     <img src={message.image} className="unstyle-images w-[50%] phone-class ml-[5em] block"/>
+                    {message.edit && <input type="text" />}
                     <div className="absolute hidden pl-3 menu items-center justify-between  bg-[#313338] right-0 top-0 cursor-pointer">
                       <MdOutlineAddReaction className="mr-2"/>
                       <FaReply className="m-2" />
                       {message.name === name && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
-                      <MdModeEdit className="m-2" />
+                     {message.name === name && <MdModeEdit className="m-2" onClick={() => handleEdit(message.messageId)} />} 
                     </div>
                   </div>
                 ) : message.isLatex ? (
@@ -206,14 +254,27 @@ export default function Channel() {
                     <div className="flex flex-col justify-start">
                       <p className="font-thic text-xs"> {message.date} </p>
                       <p>{message.name}</p>
+                      {/* <p className="break-all">{message.message}</p> */}
+                      {message.isEdit ? (
+                        <form onSubmit={(e) => {
+                          e.preventDefault();
+                          handleSubmitEdit(e.target.edit.value,message.messageId)
+                        }}>
+                          <input defaultValue={message.message} name="edit" className="max-w-[68vw] min-w-[50vw] break-all text-white outline-none bg-background" type="text" />
+                        </form>
+                      ): (
+                        <>
                       <p className="break-all">{message.message}</p>
+                      {message.isEdit === false && <p className="relative text-xs">(edited)</p>}
+                      </>
+                      )}
                       <img src={message.image} className="w-[50%] phone-class bg-white"/>
                     </div>
                     <div className="absolute hidden pl-3 menu items-center justify-between  bg-[#313338] right-0 top-0 cursor-pointer">
                     <MdOutlineAddReaction className="mr-2" />
                       <FaReply className="m-2" />
                     {message.name === name && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
-                      <MdModeEdit className="m-2" />
+                    {message.name === name &&  <MdModeEdit className="m-2" onClick={() => handleEdit(message.messageId)} />}
                     </div>
                   </div>
                   <div className={` relative message w-full hover:bg-[#151617]  px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '': 'mb-4'} flex text-white`}>
@@ -240,15 +301,37 @@ export default function Channel() {
                     />
                     <div className="flex flex-col justify-start">
                       <p className="font-thic text-xs"> {message.date} </p>
-                      <p>{message.name}</p>
+                      <p className={`${
+                          messages.filter((item) => item.name === message.name).length > 80
+                        ? 'text-red-400'
+                        ? messages.filter((item) => item.name === message.name).length > 120
+                        : 'text-[purple]'
+                        : messages.filter((item) => item.name === message.name).length > 40
+                        ? 'text-pink-400'
+                        : messages.filter((item) => item.name === message.name).length > 10
+                        ? 'text-blue-400'
+                        : 'text-white'
+                    }`}>{message.name}</p>
+                      {message.isEdit ? (
+                        <form onSubmit={(e) => {
+                          e.preventDefault();
+                          handleSubmitEdit(e.target.edit.value,message.messageId)
+                        }}>
+                          <input defaultValue={message.message} name="edit" className="max-w-[68vw] min-w-[50vw] break-all text-white outline-none bg-background" type="text" />
+                        </form>
+                      ): (
+                        <>
                       <p className="break-all">{message.message}</p>
+                      {message.isEdit === false && <p className="relative text-xs">(edited)</p>}
+                      </>
+                      )}
                       <img src={message.image} className="w-[50%] phone-class bg-white"/>
                     </div>
                     <div className="absolute hidden pl-3 menu items-center justify-between  bg-[#313338] right-0 top-0 cursor-pointer">
                     <MdOutlineAddReaction className="mr-2" />
                       <FaReply className="m-2" />
                     {message.name === name && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
-                      <MdModeEdit className="m-2" />
+                     {message.name === name && <MdModeEdit className="m-2" onClick={() => handleEdit(message.messageId)} />} 
                     </div>
                   </div>
                 )}
