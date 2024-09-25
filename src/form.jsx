@@ -18,20 +18,17 @@ export default function FormPage() {
         formData.append('user', user);        
         console.log(e.target.myImage.files[0])
         try {
-            const userData = await fetch('/storeuser', {
+            const res = await fetch('/register', {
                 method: "POSt", 
-                body: formData
-            }).then(res => res.json()).catch(err => console.log(err));
-            if(userData === 403) {
-                setError(true);
-                userNameInput.current.value = '';
-                return;
-            }
-            console.log(userData);
-            
-                document.cookie = `name=${userData.name}; expires=Thu, 07 Jan 2040 12:00:00 GMT`;
-                document.cookie = `src=${userData.url}; expires=Thu, 07 Jan 2040 12:00:00 GMT`;
+                body: formData,
+                credentials: "include",
+            })
+            console.log(res.ok)
+           if(res.ok) {
+            console.log('ok')
                navigate('/');
+           }
+
             
         }
         catch(err) {

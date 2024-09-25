@@ -15,9 +15,9 @@ import { IoMdSend } from "react-icons/io";
 export default function Channel() {
   const [messages, setMessages] = useState([]);
   const [channels , setChannels] = useState([]);
-  const [isClickedOnMenu, setIsClickedOnMenu] = useState(true);
   const [typingUser, setTypingUser] = useState([]);
-  const navigate = useNavigate();
+  const [userData, setUserData] = useState({});
+  const Navigate = useNavigate();
   const elem = useRef(null);
   const { id } = useParams();
   const socket = io("/", {
@@ -25,21 +25,9 @@ export default function Channel() {
     path: "/socket.io",
   });
   const input = useRef(null);
-  if (!document.cookie) {
-    console.log("doesnt have a cookie");
-    navigate("/register");
-  }
-
-  const name = document.cookie
-    ? document.cookie.split(";")[0].split("=")[1]
-    : "";
-  const url = document.cookie
-    ? document.cookie.split(";")[1].split("=")[1]
-    : "";
-
 
   async function storeMessagesInDb(message, date, file, messageId, isLatex) {
-    const user = JSON.stringify({ message, name, url, date,  id , messageId, isLatex})
+    const user = JSON.stringify({ message, name: userData.name, url: userData.url, date,  id , messageId, isLatex})
     const formData = new FormData();
     formData.append('user', user);
     formData.append('file',file )
@@ -98,13 +86,12 @@ export default function Channel() {
     }
   }
   function handleInputChange(e) {
-    // if(typingUser.includes(name)) return;
-  
-    socket.emit('change', name, id)
+    socket.emit('change', userData.name, id)
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if(!e.target.text.value.length) return;
     let image;
     let file = e.target.image.files[0];
     const date = new Date();
@@ -121,24 +108,11 @@ export default function Channel() {
     else {
       storeMessagesInDb(e.target.text.value, currentDate,undefined, messageId, isLatex)
     }
-  //   if(e.target.text.value.match(/[$]/gi)?.length === 2) {
-  //     // socket.emit('message', {
-  //     //   isLatex:true,
-  //     //   message: e.target.text.value.replace(/[$]/gi, ''),
-  //     //   image,
-  //     // }, id)
-  //     // return
-  //     setMessages(prev => [...prev, {
-  //       isLatex: true,
-  //       message:e.target.text.value.replace(/[$]/gi, '')
-  //     }])
-  //     return
-  // }
     socket.emit("message", {
       isLatex,
       message: e.target.text.value,
-      name,
-      url,
+      name: userData.name,
+      url: userData.url,
       date: currentDate,
       image,
       messageId,
@@ -161,8 +135,6 @@ export default function Channel() {
         .catch((err) => console.error(err));
       setMessages(messages);
     }
-
-    
 
     function onConnection() {
       console.log("connection");
@@ -187,9 +159,6 @@ export default function Channel() {
         });
       });
       socket.on('edit', (newMsg, oldMessageId) => {
-        console.log(newMsg);
-        console.log(oldMessageId)
-        console.log('editing');
         setMessages(prev => [
           ...prev.map(item => {
             if(item.messageId === oldMessageId) {
@@ -201,17 +170,13 @@ export default function Channel() {
       })
 
       socket.on('change', (name) => {
-        console.log(name);
         setTypingUser(prev => {
           if(prev.includes(name)) {
-           console.log('prev includes')
             setTimeout(() => {
-              console.log('timeout ohhh')
               setTypingUser(prev => prev.filter(item => item !== name))
             }, 3000);
             return prev
           }else {
-            console.log('non condition is met')
             return [...prev, name]
           }
         })
@@ -231,6 +196,21 @@ export default function Channel() {
     };
   }, [id]);
 
+  useEffect(() => {
+    async function getUserData() {
+      try {
+        const res = await fetch('/userData');
+        if(!res.ok) throw new Error('couldnt get userData');
+        const userData = await res.json();
+        setUserData(userData);
+      } catch(err) {
+        console.log(err)
+        Navigate('/register')
+      }
+  }
+    getUserData();
+  }, [])
+
 
   return (
     <div className="flex bg-background h-screen ">
@@ -242,7 +222,7 @@ export default function Channel() {
           {messages &&
             messages.map((message, index) => (
               <>
-                {(index > 0 && messages[index - 1].name) ===
+                {(!message.isLatex && index > 0 && messages[index - 1].name) ===
                   messages[index].name &&
                 messages[index - 1].date === messages[index].date ? (
                   <div
@@ -269,7 +249,17 @@ export default function Channel() {
                       />
                       <div className="flex flex-col justify-start">
                         <p className="font-thic text-xs"> {message.date} </p>
-                        <p>{message.name}</p>
+                        <p className = {`${
+                            messages.filter((item) => item.name === message.name).length > 80
+                          ? 'text-red-400'
+                          : messages.filter((item) => item.name === message.name).length > 120
+                          ? 'text-[purple]'
+                          : messages.filter((item) => item.name === message.name).length > 40
+                          ? 'text-pink-400'
+                          : messages.filter((item) => item.name === message.name).length > 10
+                          ? 'text-blue-400'
+                          : 'text-white'
+                      }`}>{message.name}</p>
                         {message.isEdit ? (
                           <form onSubmit={(e) => {
                             e.preventDefault();
@@ -285,17 +275,7 @@ export default function Channel() {
                         ) : (
                           <>
                           
-                          <p className={`${
-                            messages.filter((item) => item.name === message.name).length > 80
-                          ? 'text-red-400'
-                          : messages.filter((item) => item.name === message.name).length > 120
-                          ? 'text-[purple]'
-                          : messages.filter((item) => item.name === message.name).length > 40
-                          ? 'text-pink-400'
-                          : messages.filter((item) => item.name === message.name).length > 10
-                          ? 'text-blue-400'
-                          : 'text-white'
-                      }`}>{message.name}</p>
+                          <p>{message.message}</p>
                             {message.isEdit === false && <p className="relative text-xs">(edited)</p>}
                           </>
                         )}
@@ -304,8 +284,8 @@ export default function Channel() {
                       <div className="absolute hidden pl-3 menu items-center justify-between bg-[#313338] right-0 top-0 cursor-pointer">
                         <MdOutlineAddReaction className="mr-2" />
                         <FaReply className="m-2" />
-                        {message.name === name && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
-                        {message.name === name && <MdModeEdit className="m-2" onClick={() => handleEdit(message.messageId)} />} 
+                        {message.name === userData.name && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
+                        {message.name === userData.name && <MdModeEdit className="m-2" onClick={() => handleEdit(message.messageId)} />} 
                       </div>
                     </div>
                     <div className={`relative message w-full hover:bg-[#151617] px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '' : 'mb-4'} flex text-white`}>
@@ -364,8 +344,8 @@ export default function Channel() {
                     <div className="absolute hidden pl-3 menu items-center justify-between bg-[#313338] right-0 top-0 cursor-pointer">
                       <MdOutlineAddReaction className="mr-2" />
                       <FaReply className="m-2" />
-                      {message.name === name && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
-                      {message.name === name && <MdModeEdit className="m-2" onClick={() => handleEdit(message.messageId)} />} 
+                      {message.name === userData.name && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
+                      {message.name === userData.name && <MdModeEdit className="m-2" onClick={() => handleEdit(message.messageId)} />} 
                     </div>
                   </div>
                 )}
@@ -404,11 +384,11 @@ export default function Channel() {
           {typingUser.length >= 1 ? (
             <p className="text-white">
               {typingUser
-                .filter(user => user !== name)
+                .filter(user => user !== userData.name)
                 .reduce(
                   (accmulator, previous) => previous + " and " + accmulator , ''
                 )}{" "}
-                {typingUser[0] !== name && <> is typing..</>}
+                {typingUser[0] !== userData.name && <> is typing..</>}
             </p>
           ) : (
             <></>

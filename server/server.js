@@ -7,11 +7,16 @@ import {Server} from 'socket.io';
 import {v2 as cloudinary} from 'cloudinary';
 import cors from 'cors';
 import path from 'node:path';
+import session from 'express-session';
+import MongoStore from 'connect-mongo';
+import cookieParser from 'cookie-parser';
 import { messages, users, channels} from './usersData.js';
 import multer from 'multer';
+import { isAuthenticated } from './isAuthenticated.js';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-dotenv.config()
+dotenv.config();
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -77,56 +82,34 @@ mongoose.connect(process.env.DB_URL)
 .then(() => console.log('database connected'))
 .catch(err => console.log('failed to connect', err));
 
-app.use(cors())
+app.use(session({
+    secret: 'dang',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        sameSite: 'strict',
+        store: MongoStore.create({
+            mongoUrl: process.env.DB_URL
+        }),
+        maxAge: 1000 * 60 * 30
+    }
+}))
+app.use(cookieParser())
+app.use(cors());
+// app.use(isAuthenticated);
 app.use(express.json());
 
-app.post('/storemessage', upload.single('file'),async (req, res) => {
-    try {
-        // console.log('storing data with  id:' + req.body. id)
-        //  await user.save();
-        //  res.send(user);
-        const body = JSON.parse(req.body.user);
-        console.log(body, 'body')
-        let imageUrl;
-        console.log(req.body.isLatex, 'latex')
-        if(req.file) {
-            const image = await cloudinary.uploader.upload(req.file?.path);
-             imageUrl = image?.secure_url
-        }
-        const user = new messages(
-             {
-                 name: body.name,
-                 message: body.message,
-                 url: body.url,
-                 date: body.date,
-                 id: body.id,
-                 isLatex:body.isLatex,
-                 messageId: body.messageId,
-                 image: imageUrl
-             }
-         )
-         await user.save();
-         console.log(user);
-         if(!imageUrl) {
-            return res.status(401).json({message: "no image is sent"})
-         }
-         res.status(200).json(imageUrl)
-    }catch(err) {
-        console.log('oops');
-        console.log(err)
-    }
-})
 
-app.post('/storeuser', upload.single('file'), async (req, res, next) => {
+app.post('/register', upload.single('file'), async (req, res) => {
    
-        try{
+    try{
             const {name,password, userName} = JSON.parse(req.body.user);
             const check = await users.findOne({userName}).exec();
             if(check) {
-                res.json(403).send({errorMessage: 'user already exist'});
                 console.log(check);
                 console.log('user already exist')
-                return
+               return res.status(403).json({errorMessage: 'user already exist'});
             }
             const result = await cloudinary.uploader.upload(req.file.path);
             const image = result.secure_url || result.url;
@@ -138,15 +121,65 @@ app.post('/storeuser', upload.single('file'), async (req, res, next) => {
                 url: image
             })
             await user.save();
-            res.send(user);
+            req.session.name = user.name;
+            req.session.url = user.url;
+            req.session.isLoggedIn = true;
+            res.status(200).json({message: 'logged succesfully'})
             // console.log(user)
-      }catch (err) {
-        console.log(err);
-      }
+        }catch (err) {
+            console.log(err);
+        }
+        
+    })
 
-})
+    
+    app.post('/storemessage', isAuthenticated,upload.single('file'),async (req, res) => {
+        try {
+    
+            const body = JSON.parse(req.body.user);
+            console.log(body, 'body')
+            let imageUrl;
+            console.log(req.body.isLatex, 'latex')
+            if(req.file) {
+                const image = await cloudinary.uploader.upload(req.file?.path);
+                 imageUrl = image?.secure_url
+            }
+            const user = new messages(
+                 {
+                     name: body.name,
+                     message: body.message,
+                     url: body.url,
+                     date: body.date,
+                     id: body.id,
+                     isLatex:body.isLatex,
+                     messageId: body.messageId,
+                     image: imageUrl
+                 }
+             )
+             await user.save();
+             console.log(user);
+             if(!imageUrl) {
+                return res.status(401).json({message: "no image is sent"})
+             }
+             res.status(200).json(imageUrl)
+        }catch(err) {
+            console.log('oops');
+            console.log(err)
+        }
+    })
 
-app.post('/getdata', async (req, res) => {
+    app.get('/userData', (req, res) => {
+        try {  
+            res.status(200).json({
+                name: req.session.name,
+                url: req.session.url,
+            })
+        } catch(err) {
+            console.log('couldnt get user data: ', err)
+        }
+    })
+    
+    app.post('/getdata',isAuthenticated,async (req, res) => {
     try{
         const data = await messages.find({ id: req.body.id}).exec();
         res.status(200).json(data)
@@ -157,7 +190,7 @@ app.post('/getdata', async (req, res) => {
     }
 })
 
-app.get('/getChannels', async (req, res) => {
+app.get('/getChannels',isAuthenticated, async (req, res) => {
     try {
         const allChannels = await channels.find().exec();
         res.send(allChannels)     

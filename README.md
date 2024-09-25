@@ -13,6 +13,8 @@ Currently, two official plugins are available:
 ![alt text](https://res.cloudinary.com/dwa2csohq/image/upload/v1726937645/mln2f8dvuzmhrt8kwbvt.png)
 - the project is built on react and socket.io to maintain a real time communication 
 # Clone the Project
+- users now can delete, edit and write latex in chat by just adding 2 dollar signs ``$latex$``
+![alt text](https://res.cloudinary.com/dwa2csohq/image/upload/v1727294026/pzo10avxnxf5cvuazlnt.png)
 ```
 - git clone https://github.com/rajelmn/fullstack-community
 - npm install

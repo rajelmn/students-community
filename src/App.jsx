@@ -4,12 +4,14 @@ import SideBar from './sideBar';
 import './App.css';
 import { io } from "socket.io-client";
 import Main from './mainContent'
-import { Outlet, useParams } from 'react-router-dom';
+import { useNavigate, Outlet, useParams } from 'react-router-dom';
 import { useRef } from 'react';
 
 export default function App() {
   const [isClickedOnMenu, setIsClickedOnMenu] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [channels, setChannels] = useState([]);
+  const Navigate = useNavigate();
   // console.log(isClickedOnMenu, 'isclicked')
   const { id } = useParams();
   const inputSubject = useRef(null);
@@ -37,13 +39,23 @@ export default function App() {
 
   useEffect(() => {
     async function loadChannelsFromDb() {
+      console.log('hey')
       try {
-        const res = await fetch('/getChannels');
+        const res = await fetch('/getChannels', {
+          method: 'get',
+          credentials: "include",
+        });
         const allChannels = await res.json();
+        console.log(res.ok)
+        if(!res.ok) {
+          throw new Error('couldnt load channels')
+        }
+        setIsAuthenticated(true)
         setChannels(allChannels)
       } catch(err) {
         console.log('couldnt load channels');
-        console.log(err)
+        console.log(err);
+        Navigate('/register')
       }
     }
     
@@ -68,6 +80,8 @@ export default function App() {
   }, [])
 
   return(
+    <>
+    {isAuthenticated && (
    <div className='flex'>
     {isClickedOnMenu && (
     <SideBar channels={channels} inputSubject={inputSubject} handleCreatingChannels={handleCreatingChannels} handleChangingMenuState={setIsClickedOnMenu}/>
@@ -77,5 +91,7 @@ export default function App() {
     <Outlet/>
     </div>
    </div> 
+    )}
+    </>
   )
 }
