@@ -10,7 +10,7 @@ import { io } from "socket.io-client";
 import { FaUpload } from "react-icons/fa6";
 import { FaReply } from "react-icons/fa";
 import { CiCircleRemove } from "react-icons/ci";
-// import DynamicDate from "./DynamicDate";
+import DynamicDate from "./DynamicDate";
 import { MdDelete,MdModeEdit,MdOutlineAddReaction,MdVerified } from "react-icons/md";
 import { IoMdSend } from "react-icons/io";
 
@@ -296,11 +296,7 @@ export default function Channel() {
                         className="rounded-[50%] w-[70px] block max-h-[72px] mr-3"
                       />
                       <div className="flex flex-col justify-start">
-                        <p className="font-thic text-xs"> {new Date(message.date).toLocaleTimeString("en-mr", {
-                                                      hour: "numeric",
-                                                      minute: "numeric",
-                                                      hour12: true,
-                                                    })} </p>
+                      <p> <DynamicDate date={new Date(message.date)} /> </p>
                         <p className = {`${
                             messages.filter((item) => item.name === message.name).length > 80
                           ? 'text-red-400'
@@ -384,12 +380,7 @@ export default function Channel() {
                       className="rounded-[50%] w-[70px] block max-h-[72px] mr-3"
                     />
                     <div className="flex flex-col justify-start">
-                      <p className="font-thic text-xs"> { new Date(message.date).toLocaleTimeString("en-mr", {
-                                        hour: "numeric",
-                                        minute: "numeric",
-                                        hour12: true,
-                                      })} </p>
-                            {console.log(message.date)}
+                    <p> <DynamicDate date={new Date(message.date)} /> </p>
                       <p className={`${
                           messages.filter((item) => item.name === message.name).length > 80
                         ? 'text-red-400'
@@ -425,8 +416,8 @@ export default function Channel() {
                       <MdOutlineAddReaction className="mr-2" />
 
                       <FaReply onClick={() => handleAnsweringMessage(message)} className="m-2" />
-                      {message.name === userData.name && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
-                      {message.name === userData.name && <MdModeEdit className="m-2" onClick={() => handleEdit(message.messageId)} />} 
+                      {message.userName === userData.userName && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
+                      {message.userName === userData.userName && <MdModeEdit className="m-2" onClick={() => handleEdit(message.messageId)} />} 
                     </div>
                   </div>
                   </div>

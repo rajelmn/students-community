@@ -40,6 +40,7 @@ cloudinary.config({
 });
 
 io.on('connection', (socket) =>{
+    
 
     socket.on('join', async (id) => {
         try {
@@ -59,6 +60,7 @@ io.on('connection', (socket) =>{
         }
 
     })
+
     socket.on('delete', async (msg, id) => {
         console.log('delete');
         console.log(msg)
@@ -88,10 +90,14 @@ io.on('connection', (socket) =>{
         console.log('emitting channels');
         io.emit('channels', channelDetail)
     })
+
+    socket.on('answer', (messageId, id) => {
+        
+    })
  
-    // socket.on('disconnect', () => {
-    //     console.log('user disconnected')
-    // })
+    socket.on('disconnect', () => {
+        // console.log('user disconnected')
+    })
 } )
 mongoose.connect(process.env.DB_URL)
 .then(() => console.log('database connected'))
@@ -102,12 +108,12 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        httpOnly: true,
+        // httpOnly: true,
         sameSite: 'strict',
         store: MongoStore.create({
             mongoUrl: process.env.DB_URL
         }),
-        maxAge: 1000 * 60 * 30
+        // maxAge: 1000 * 60 * 30
     }
 }))
 app.use(cookieParser())
@@ -154,7 +160,6 @@ app.post('/register', upload.single('file'), async (req, res) => {
             const body = JSON.parse(req.body.user);
             console.log(body, 'body')
             let imageUrl;
-            console.log(req.body.isLatex, 'latex')
             if(req.file) {
                 const image = await cloudinary.uploader.upload(req.file?.path);
                  imageUrl = image?.secure_url
@@ -166,13 +171,20 @@ app.post('/register', upload.single('file'), async (req, res) => {
                      url: body.url,
                      date: body.date,
                      id: body.id,
+                     answering: {
+                        isAnswering: body.answering.isAnswering,
+                        name: body.answering.name,
+                        url: body.answering.url,
+                        message: body.answering.message,
+                        messageId: body.answering.messageId
+                     },
                      isLatex:body.isLatex,
                      messageId: body.messageId,
                      image: imageUrl
                  }
              )
              await user.save();
-             console.log(user);
+             console.log(user, 'this is the goddamn user');
              if(!imageUrl) {
                 return res.status(401).json({message: "no image is sent"})
              }

@@ -6,7 +6,14 @@ const userSchema = mongoose.Schema({
     password: String,
     userName: String,
     message: String,
-    date: String,
+    date: Date,
+    answering: {
+        isAnswering: Boolean,
+        name: String,
+        url: String,
+        message: String,
+        messageId: String,
+      },
     id: String,
     isAdmin:Boolean,
     isEdit:Boolean,
@@ -14,6 +21,7 @@ const userSchema = mongoose.Schema({
     isLatex: Boolean,
     image: String,
 })
+
 
 
 const channelSchema = mongoose.Schema({
