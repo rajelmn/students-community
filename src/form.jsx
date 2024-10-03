@@ -43,32 +43,85 @@ export default function FormPage() {
    }
 
     return(
-        <div className="wrapper flex flex-col justify-center  text-black bg-[#eee] h-screen w-screen items-center">
-            <h1 className="mb-6 text-3xl ">Welcome to our <span className="text-orange-400">community</span> </h1>
-               <div className="bg-white shadow-sm rounded-md p-5 pb-0">
-                <h1 className="mb-2">register</h1>
-            <form className="w-80" ref={form} onSubmit={handleSubmit}>
-                <div className="mt-8">
-                <label htmlFor="userName">name</label>
-                <input type="text" id="name" minLength="3" name="name" className="block w-full p-2 focus:outline-none focus:ring-0 focus:border-[orange] border-solid border-[1px] border-slate-950" placeholder="enter your name" required/>
-                </div>
-                <div className="mt-8">
-                <label htmlFor="userName" style={{outline: error? 'red' : 'black'}}>user name</label>
-                <input type="text" minLength="3" ref={userNameInput} id="userName"  name="userName" className="block w-full p-2 focus:outline-none focus:ring-0 focus:border-[orange] border-solid border-[1px] border-slate-950" placeholder="enter your name" required/>
-                </div>
-                <div className="mt-8">
-                <label htmlFor="password">password</label>
-                <input type="password" minLength="6" id="password" name="password"  className="block p-2 w-full focus:outline-none focus:ring-0 focus:border-[orange] border-solid border-[1px] border-slate-950" placeholder="enter your password" required/>
-                </div>
-                <label className="mt-4 block">Your profile image
-                    <input type="file" name="myImage" accept="image/png, image/jpg, image/jpeg" required />
-                </label>
-                <button className="block mt-2 text-white w-20 h-8 bg-orange-500 rounded-lg" type="submit">register</button>
-                <>{error && 'user name already exist , try another one'}</>
-            </form>
-        </div>
-        <form />
-        </div>
+<div className="wrapper flex flex-col justify-center text-black bg-[#f5f5f5] min-h-screen w-full items-center">
+  <h1 className="mb-6 text-4xl font-semibold text-gray-800 text-center">
+    Welcome to our <span className="text-orange-500">community</span>
+  </h1>
+  <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md sm:w-96">
+    <h2 className="mb-4 text-2xl font-medium text-gray-700">Register</h2>
+    <form className="space-y-6" ref={form} onSubmit={handleSubmit}>
+      <div className="mt-4">
+        <label htmlFor="name" className="block text-gray-600 font-medium">
+          Name
+        </label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          className="block w-full p-3 mt-2 border rounded-md focus:outline-none focus:ring focus:ring-orange-300 focus:border-orange-500 border-gray-300"
+          placeholder="Enter your name"
+          required
+        />
+      </div>
+      <div className="mt-4">
+        <label
+          htmlFor="userName"
+          className="block text-gray-600 font-medium"
+          style={{ color: error ? 'red' : 'black' }}
+        >
+          Username
+        </label>
+        <input
+          type="text"
+          ref={userNameInput}
+          id="userName"
+          name="userName"
+          className="block w-full p-3 mt-2 border rounded-md focus:outline-none focus:ring focus:ring-orange-300 focus:border-orange-500 border-gray-300"
+          placeholder="Enter your username"
+          required
+        />
+      </div>
+      <div className="mt-4">
+        <label htmlFor="password" className="block text-gray-600 font-medium">
+          Password
+        </label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          className="block w-full p-3 mt-2 border rounded-md focus:outline-none focus:ring focus:ring-orange-300 focus:border-orange-500 border-gray-300"
+          placeholder="Enter your password"
+          required
+        />
+      </div>
+      <div className="mt-4">
+        <label className="block text-gray-600 font-medium">Your profile image</label>
+        <input
+          type="file"
+          name="myImage"
+          accept="image/png, image/jpg, image/jpeg"
+          className="block w-full mt-2 p-3 border rounded-md bg-white focus:outline-none focus:ring focus:ring-orange-300 focus:border-orange-500 border-gray-300"
+          required
+        />
+      </div>
+      <button
+        type="submit"
+        className="block w-full h-12 mt-6 text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-transform duration-300 ease-in-out transform hover:scale-105 active:scale-95"
+        onClick={() => {
+          document.querySelector("button").classList.add("animate-pulse");
+        }}
+        onAnimationEnd={() => {
+          document.querySelector("button").classList.remove("animate-pulse");
+        }}
+      >
+        Register
+      </button>
+      
+    </form>
+  </div>
+</div>
+
+
     )
 }
 
