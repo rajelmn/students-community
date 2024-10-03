@@ -10,6 +10,7 @@ import { useRef } from 'react';
 export default function App() {
   const [isClickedOnMenu, setIsClickedOnMenu] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const [userData, setUserData] = useState({});
   const [channels, setChannels] = useState([]);
   const Navigate = useNavigate();
   // console.log(isClickedOnMenu, 'isclicked')
@@ -19,9 +20,6 @@ export default function App() {
     transports: ["websocket"],
     path: "/socket.io",
   });
-  const name = document.cookie
-    ? document.cookie.split(";")[0].split("=")[1]
-    : "";
   // console.log(id)
   function handleBurgerMenu() {
     console.log('fires')
@@ -30,8 +28,13 @@ export default function App() {
   }
   
   function handleCreatingChannels() {
+    console.log(channels)
+    console.log(channels.filter(channel => channel.owner === 'userData.name'))
+    if(channels.filter(channel => channel.owner === userData.name).length) {
+      return alert('you already created a channel')
+    }
     socket.emit('channels', {
-              owner: name,
+              owner: userData.name,
               subject: inputSubject.current.value,
               id:crypto.randomUUID(),
              }, id)
@@ -58,6 +61,20 @@ export default function App() {
         Navigate('/register')
       }
     }
+
+     // temporarly until i use some react library to pass the state to other components
+     async function getUserData() {
+      try {
+        const res = await fetch('/userData');
+
+        if(res.ok)  {
+          const userData = await res.json();
+          setUserData(userData)
+        }
+      } catch(err) {
+        console.log('oops', err)
+      }
+    }
     
     function onConnection() {
       // console.log("connection");
@@ -72,6 +89,7 @@ export default function App() {
     socket.connect();
     socket.on("connect", onConnection);
     
+    getUserData();
     loadChannelsFromDb();
     return () => {
       socket.off("connect", onConnection);

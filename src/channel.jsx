@@ -9,6 +9,8 @@ import { InlineMath, BlockMath } from 'react-katex';
 import { io } from "socket.io-client";
 import { FaUpload } from "react-icons/fa6";
 import { FaReply } from "react-icons/fa";
+import { CiCircleRemove } from "react-icons/ci";
+// import DynamicDate from "./DynamicDate";
 import { MdDelete,MdModeEdit,MdOutlineAddReaction,MdVerified } from "react-icons/md";
 import { IoMdSend } from "react-icons/io";
 
@@ -16,18 +18,34 @@ export default function Channel() {
   const [messages, setMessages] = useState([]);
   const [channels , setChannels] = useState([]);
   const [typingUser, setTypingUser] = useState([]);
+  const [userAnswering, setUserAnswering] = useState({});
   const [userData, setUserData] = useState({});
   const Navigate = useNavigate();
   const elem = useRef(null);
   const { id } = useParams();
+  console.log(messages)
   const socket = io("/", {
     transports: ["websocket"],
     path: "/socket.io",
   });
   const input = useRef(null);
-
   async function storeMessagesInDb(message, date, file, messageId, isLatex) {
-    const user = JSON.stringify({ message, name: userData.name, url: userData.url, date,  id , messageId, isLatex})
+    const user = JSON.stringify({
+  message,
+  name: userData.name,
+  url: userData.url,
+  answering: {
+    isAnswering: userAnswering.messageId ? true: false,
+    name: userData.name,
+    url: userData.url,
+    message: userAnswering?.message,
+    messageId: userAnswering?.messageId,
+  },
+  date,
+  id,
+  messageId,
+  isLatex
+});
     const formData = new FormData();
     formData.append('user', user);
     formData.append('file',file )
@@ -36,9 +54,7 @@ export default function Channel() {
         method: "post",
         body: formData,
       });
-      console.log(response.ok);
       const image = await response.json();
-      console.log(image);
       return image
     } catch (err) {
       console.error(err);
@@ -48,7 +64,6 @@ export default function Channel() {
   async function handleDeleteMessage(messageId) {
     try {
       const deletedMessage = messages.filter((message) => message.messageId === messageId);
-      console.log(deletedMessage)
       socket.emit('delete',deletedMessage, id);
     } catch(err){
       console.log(err)
@@ -77,6 +92,11 @@ export default function Channel() {
     ])
   }
 
+  function handleAnsweringMessage(messageObj) {
+    const {messageId, name, message, url} = messageObj;
+    setUserAnswering({messageId, name, message, url})
+  }
+
   function handleSubmitEdit(newMsg,messageId) {
     try {
       console.log('sumbitting')
@@ -95,28 +115,32 @@ export default function Channel() {
     let image;
     let file = e.target.image.files[0];
     const date = new Date();
-    const currentDate = date.toLocaleTimeString("en-mr", {
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-    });
     const isLatex = e.target.text.value.match(/[$]/gi)?.length === 2
     const messageId = crypto.randomUUID();
     if(file) {
-      image = await storeMessagesInDb(e.target.text.value, currentDate , file, isLatex);
+      image = await storeMessagesInDb(e.target.text.value, date , file, isLatex);
     }
     else {
-      storeMessagesInDb(e.target.text.value, currentDate,undefined, messageId, isLatex)
+      storeMessagesInDb(e.target.text.value, date,undefined, messageId, isLatex)
     }
+
     socket.emit("message", {
       isLatex,
       message: e.target.text.value,
       name: userData.name,
       url: userData.url,
-      date: currentDate,
+      answering: {
+        isAnswering: userAnswering.messageId ? true: false,
+        name: userAnswering?.name,
+        url: userAnswering?.url,
+        message: userAnswering?.message,
+        messageId: userAnswering?.messageId,
+      } ,
+      date,
       image,
       messageId,
     },  id);
+    setUserAnswering({});
     input.current.value = "";
     e.target.image.value = '';
   }
@@ -149,15 +173,11 @@ export default function Channel() {
         ])
       })
       socket.on("chat", (msg) => {
-        console.log('on chat messages')
         setMessages((prev) => [...prev, msg]);
       });
       socket.on('delete', (msg) => {
-        console.log('deleting')
-        console.log(msg)
-        console.log(msg[0].messageId)
+       
         setMessages((prevMessages) => {
-          console.log(prevMessages.filter((message) => message.messageId !== msg[0].messageId));
           return prevMessages.filter((message) => message.messageId !== msg[0].messageId);
         });
       });
@@ -195,7 +215,6 @@ export default function Channel() {
       socket.off("chat");
       socket.off('delete'); 
       socket.disconnect();
-      socket.disconnect()
     };
   }, [id]);
 
@@ -224,24 +243,50 @@ export default function Channel() {
         >
           {messages &&
             messages.map((message, index) => (
+              
               <>
-                {(!message.isLatex && index > 0 && messages[index - 1].name) ===
-                  messages[index].name &&
-                messages[index - 1].date === messages[index].date ? (
+                {(!message.isLatex && !message?.answering?.isAnswering && index > 0 && messages[index - 1].name) ===
+                  messages[index].name  ? (
                   <div
-                    key={crypto.randomUUID()}
-                    className={`message w-full px-3 ${
-                      messages[index + 1] &&
-                      messages[index + 1].name === messages[index].name
-                        ? ""
-                        : "mb-4"
+                  key={crypto.randomUUID()}
+                  className={`message w-full px-3 relative hover:bg-background${
+                    messages[index + 1] &&
+                    messages[index + 1].name === messages[index].name
+                    ? ""
+                    : "mb-4"
                     } flex flex-col text-white`}
-                  >
-                    <p className="break-all ml-[79px]">{message.message}</p>
+                    >
+                    {/* {message.answering && <p>replying to : {message.answering}</p>} */}
+
+                    {message.isEdit ? (
+                         <form onSubmit={(e) => {
+                           e.preventDefault();
+                           handleSubmitEdit(e.target.edit.value, message.messageId)
+                         }}>
+                           <input
+                             defaultValue={message.message}
+                             name="edit"
+                             className="max-w-[68vw] min-w-[50vw] ml-[83px] w-[calc(100%-95px)] break-all text-white outline-none bg-background"
+                             type="text"
+                           />
+                         </form>
+                       ) : (
+                         <>
+                         
+                         <p className="ml-[83px]">{message.message}</p>
+                           {message.isEdit === false && <p className="relative text-xs">(edited)</p>}
+                         </>
+                       )}
                     <img
                       src={message.image}
                       className="unstyle-images w-[50%] phone-class ml-[5em] block"
                     />
+                     <div className="absolute hidden pl-3 menu items-center justify-between bg-[#313338] right-0 top-0 cursor-pointer">
+                        <MdOutlineAddReaction className="mr-2" />
+                        <FaReply onClick={() => handleAnsweringMessage(message)} className="m-2" />
+                        {message.name === userData.name && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
+                        {message.name === userData.name && <MdModeEdit className="m-2" onClick={() => handleEdit(message.messageId)} />} 
+                      </div>
                   </div>
                 ) : message.isLatex ? (
                   <>
@@ -251,7 +296,11 @@ export default function Channel() {
                         className="rounded-[50%] w-[70px] block max-h-[72px] mr-3"
                       />
                       <div className="flex flex-col justify-start">
-                        <p className="font-thic text-xs"> {message.date} </p>
+                        <p className="font-thic text-xs"> {new Date(message.date).toLocaleTimeString("en-mr", {
+                                                      hour: "numeric",
+                                                      minute: "numeric",
+                                                      hour12: true,
+                                                    })} </p>
                         <p className = {`${
                             messages.filter((item) => item.name === message.name).length > 80
                           ? 'text-red-400'
@@ -278,7 +327,7 @@ export default function Channel() {
                         ) : (
                           <>
                           
-                          <p>{message.message}</p>
+                        <p>{message.message}</p>
                             {message.isEdit === false && <p className="relative text-xs">(edited)</p>}
                           </>
                         )}
@@ -286,7 +335,8 @@ export default function Channel() {
                       </div>
                       <div className="absolute hidden pl-3 menu items-center justify-between bg-[#313338] right-0 top-0 cursor-pointer">
                         <MdOutlineAddReaction className="mr-2" />
-                        <FaReply className="m-2" />
+
+                        <FaReply onClick={() => handleAnsweringMessage(message)} className="m-2" />
                         {message.name === userData.name && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
                         {message.name === userData.name && <MdModeEdit className="m-2" onClick={() => handleEdit(message.messageId)} />} 
                       </div>
@@ -306,13 +356,40 @@ export default function Channel() {
                     </div>
                   </>
                 ) : (
+                  
+                  <div>
+                 
+                  {/* {message.answering?.isAnswering && (
+                    <div className="flex items-center pl-[73px] my-3 border-solid border border-[#665656]">
+                        <img src={message.answering.url} className="rounded-[50%] w-7 h-7" alt="" />
+                        <span className=" text-gray-500">{message.answering.name}</span>
+                      <p className="ml-1 text-xs text-white">{message.answering.message}</p>
+                    </div>
+                  )} */}
+                  {message.answering?.isAnswering && (
+                    <div className="flex items-center pl-[73px] my-3 border-solid border border-[#665656]">
+                      {console.log(message.answering, 'answering')}
+                    <img src={message.answering.url} className="rounded-[50%] w-7 h-7" alt="" />
+                    <span className=" text-gray-500">{message.answering.name}</span>
+                  <p className="ml-1 text-xs text-white">
+                    
+                    {messages.filter(item => item.messageId === message.answering?.messageId)[0]?.message}
+                  </p>
+                </div>
+                  )}
+                
                   <div className={`relative message w-full hover:bg-[#151617] px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '' : 'mb-4'} flex text-white`}>
                     <img
                       src={message.url}
                       className="rounded-[50%] w-[70px] block max-h-[72px] mr-3"
                     />
                     <div className="flex flex-col justify-start">
-                      <p className="font-thic text-xs"> {message.date} </p>
+                      <p className="font-thic text-xs"> { new Date(message.date).toLocaleTimeString("en-mr", {
+                                        hour: "numeric",
+                                        minute: "numeric",
+                                        hour12: true,
+                                      })} </p>
+                            {console.log(message.date)}
                       <p className={`${
                           messages.filter((item) => item.name === message.name).length > 80
                         ? 'text-red-400'
@@ -346,16 +423,24 @@ export default function Channel() {
                     </div>
                     <div className="absolute hidden pl-3 menu items-center justify-between bg-[#313338] right-0 top-0 cursor-pointer">
                       <MdOutlineAddReaction className="mr-2" />
-                      <FaReply className="m-2" />
+
+                      <FaReply onClick={() => handleAnsweringMessage(message)} className="m-2" />
                       {message.name === userData.name && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
                       {message.name === userData.name && <MdModeEdit className="m-2" onClick={() => handleEdit(message.messageId)} />} 
                     </div>
+                  </div>
                   </div>
                 )}
               </>
             ))}
         </div>
         <div className="form-test w-full bg-background remove-padding p-4">
+          {userAnswering.messageId && (
+          <div className="answer bg-slate-800 text-white p-1 flex justify-between">
+          <p>replying to {userAnswering.name}</p>
+          <CiCircleRemove className="text-3xl cursor-pointer" onClick={() => setUserAnswering({})} />
+          </div>
+          )}  
           <form
             onSubmit={handleSubmit}
             className="flex w-full items-center justify-between bg-gray-700 "
@@ -371,7 +456,6 @@ export default function Channel() {
                 name="image"
               />
             </div>
-  
             <input
               type="text"
               name="text"
@@ -401,4 +485,3 @@ export default function Channel() {
     </div>
   );
 }  
-
