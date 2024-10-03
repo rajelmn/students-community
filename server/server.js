@@ -41,8 +41,23 @@ cloudinary.config({
 
 io.on('connection', (socket) =>{
 
-    socket.on('join', (id) => {
-        socket.join(id)
+    socket.on('join', async (id) => {
+        try {
+            socket.join(id);
+            // console.log(id);
+            const genrealChannels = 'math' || 'physics' || 'science' || 'discussion';
+            const channelId = await channels.find({id}).exec();
+            console.log('channelId', channelId)
+            // checking if the joined id is in the db or not
+            if (channelId.length === 0 && !['math', 'physics', 'science', 'discussion'].includes(id)) {
+                console.log('la condition is met')
+                io.to(id).emit('error');
+            }
+
+        } catch(err) {
+            console.log(err)
+        }
+
     })
     socket.on('delete', async (msg, id) => {
         console.log('delete');

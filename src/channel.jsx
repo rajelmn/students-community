@@ -138,6 +138,9 @@ export default function Channel() {
 
     function onConnection() {
       console.log("connection");
+      socket.on('error', () => {
+        Navigate('/')
+      })
       socket.on('channels', (channelDetail) => {
         console.log('on channels')
         setChannels(prev => [
