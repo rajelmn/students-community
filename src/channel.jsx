@@ -10,10 +10,14 @@ import { io } from "socket.io-client";
 import { FaUpload } from "react-icons/fa6";
 import { FaReply } from "react-icons/fa";
 import { CiCircleRemove } from "react-icons/ci";
+import { LineMessage, RegularMessage, LatexMessage } from "./messages";
 import DynamicDate from "./DynamicDate";
 import { MdDelete,MdModeEdit,MdOutlineAddReaction,MdVerified } from "react-icons/md";
 import { IoMdSend } from "react-icons/io";
-
+const socket = io("/", {
+  transports: ["websocket"],
+  path: "/socket.io",
+});
 export default function Channel() {
   const [messages, setMessages] = useState([]);
   const [channels , setChannels] = useState([]);
@@ -24,16 +28,14 @@ export default function Channel() {
   const elem = useRef(null);
   const { id } = useParams();
   console.log(messages)
-  const socket = io("/", {
-    transports: ["websocket"],
-    path: "/socket.io",
-  });
   const input = useRef(null);
+
   async function storeMessagesInDb(message, date, file, messageId, isLatex) {
-    const user = JSON.stringify({
+  const user = JSON.stringify({
   message,
   name: userData.name,
   url: userData.url,
+  userName: userData.userName,
   answering: {
     isAnswering: userAnswering.messageId ? true: false,
     name: userData.name,
@@ -50,7 +52,7 @@ export default function Channel() {
     formData.append('user', user);
     formData.append('file',file )
     try {
-       const response = await fetch("/storemessage", {
+       const response = await fetch("/api/storemessage", {
         method: "post",
         body: formData,
       });
@@ -128,6 +130,7 @@ export default function Channel() {
       isLatex,
       message: e.target.text.value,
       name: userData.name,
+      userName: userData.userName,
       url: userData.url,
       answering: {
         isAnswering: userAnswering.messageId ? true: false,
@@ -148,7 +151,7 @@ export default function Channel() {
   useEffect(() => {
     socket.emit('join',  id)
     async function loadMessagesFromDb() {
-      const messages = await fetch("/getdata", {
+      const messages = await fetch("/api/getdata", {
         method: "post",
         headers: {
           "Content-Type": "application/json",
@@ -221,7 +224,7 @@ export default function Channel() {
   useEffect(() => {
     async function getUserData() {
       try {
-        const res = await fetch('/userData');
+        const res = await fetch('/api/userData');
         if(!res.ok) throw new Error('couldnt get userData');
         const userData = await res.json();
         setUserData(userData);
@@ -248,7 +251,7 @@ export default function Channel() {
                 {(!message.isLatex && !message?.answering?.isAnswering && index > 0 && messages[index - 1].name) ===
                   messages[index].name  ? (
                   <div
-                  key={crypto.randomUUID()}
+                  key={message.messageId}
                   className={`message w-full px-3 relative hover:bg-background${
                     messages[index + 1] &&
                     messages[index + 1].name === messages[index].name
@@ -273,10 +276,12 @@ export default function Channel() {
                        ) : (
                          <>
                          
-                         <p className="ml-[83px]">{message.message}</p>
+                         <p className="ml-[83px] break-all">{message.message}</p>
                            {message.isEdit === false && <p className="relative text-xs">(edited)</p>}
                          </>
                        )}
+                       {console.log(message.userName, userData)}
+                       
                     <img
                       src={message.image}
                       className="unstyle-images w-[50%] phone-class ml-[5em] block"
@@ -284,12 +289,13 @@ export default function Channel() {
                      <div className="absolute hidden pl-3 menu items-center justify-between bg-[#313338] right-0 top-0 cursor-pointer">
                         <MdOutlineAddReaction className="mr-2" />
                         <FaReply onClick={() => handleAnsweringMessage(message)} className="m-2" />
-                        {message.name === userData.name && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
-                        {message.name === userData.name && <MdModeEdit className="m-2" onClick={() => handleEdit(message.messageId)} />} 
+                        {message.userName === userData.userName && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
+                        {message.userName === userData.userName && <MdModeEdit className="m-2" onClick={() => handleEdit(message.messageId)} />} 
                       </div>
                   </div>
                 ) : message.isLatex ? (
                   <>
+                  <Answer message={message} messages={messages} />
                     <div className={`relative message w-full hover:bg-[#151617]  px-3 my-3 flex text-white`}>
                       <img
                         src={message.url}
@@ -327,17 +333,18 @@ export default function Channel() {
                             {message.isEdit === false && <p className="relative text-xs">(edited)</p>}
                           </>
                         )}
+                         {console.log(message.userName, userData)}
                         <img src={message.image} className="w-[50%] phone-class bg-white" />
                       </div>
                       <div className="absolute hidden pl-3 menu items-center justify-between bg-[#313338] right-0 top-0 cursor-pointer">
                         <MdOutlineAddReaction className="mr-2" />
 
                         <FaReply onClick={() => handleAnsweringMessage(message)} className="m-2" />
-                        {message.name === userData.name && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
-                        {message.name === userData.name && <MdModeEdit className="m-2" onClick={() => handleEdit(message.messageId)} />} 
+                        {message.userName === userData.userName && <MdDelete className="m-2 hover:text-[red]" onClick={() => handleDeleteMessage(message.messageId)}/>}  
+                        {message.userName === userData.userName && <MdModeEdit className="m-2" onClick={() => handleEdit(message.messageId)} />} 
                       </div>
                     </div>
-                    <div className={`relative message w-full hover:bg-[#151617] px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '' : 'mb-4'} flex text-white`}>
+                    <div className={`relative message w-full overflow-x-auto hover:bg-[#151617] px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '' : 'mb-4'} flex text-white`}>
                       <img
                         src="../images/new-logo.png"
                         className="rounded-[50%] w-[70px] block max-h-[72px] mr-3"
@@ -354,25 +361,8 @@ export default function Channel() {
                 ) : (
                   
                   <div>
-                 
-                  {/* {message.answering?.isAnswering && (
-                    <div className="flex items-center pl-[73px] my-3 border-solid border border-[#665656]">
-                        <img src={message.answering.url} className="rounded-[50%] w-7 h-7" alt="" />
-                        <span className=" text-gray-500">{message.answering.name}</span>
-                      <p className="ml-1 text-xs text-white">{message.answering.message}</p>
-                    </div>
-                  )} */}
-                  {message.answering?.isAnswering && (
-                    <div className="flex items-center pl-[73px] my-3 border-solid border border-[#665656]">
-                      {console.log(message.answering, 'answering')}
-                    <img src={message.answering.url} className="rounded-[50%] w-7 h-7" alt="" />
-                    <span className=" text-gray-500">{message.answering.name}</span>
-                  <p className="ml-1 text-xs text-white">
-                    
-                    {messages.filter(item => item.messageId === message.answering?.messageId)[0]?.message}
-                  </p>
-                </div>
-                  )}
+                  
+                  <Answer message={message} messages={messages} />
                 
                   <div className={`relative message w-full hover:bg-[#151617] px-3 ${messages[index + 1] && messages[index + 1].name === messages[index].name ? '' : 'mb-4'} flex text-white`}>
                     <img
@@ -410,6 +400,7 @@ export default function Channel() {
                           {message.isEdit === false && <p className="relative text-xs">(edited)</p>}
                         </>
                       )}
+                      {console.log(message.userName, userData)}
                       <img src={message.image} className="w-[50%] phone-class bg-white" />
                     </div>
                     <div className="absolute hidden pl-3 menu items-center justify-between bg-[#313338] right-0 top-0 cursor-pointer">
@@ -425,7 +416,43 @@ export default function Channel() {
               </>
             ))}
         </div>
-        <div className="form-test w-full bg-background remove-padding p-4">
+        <MessageInput 
+        userAnswering={userAnswering}
+        handleInputChange={handleInputChange}
+        handleSubmit={handleSubmit}
+        input={input}
+        setUserAnswering={setUserAnswering}
+        typingUser={typingUser}
+        userData={userData}
+        />
+      </div>
+    </div>
+  );
+}  
+
+function Answer({message, messages}) {
+
+  return(
+    <>
+    {message.answering?.isAnswering && (
+      <div className="flex items-center pl-[73px] my-3 border-solid border border-[#665656]">
+        {console.log(message.answering, 'answering')}
+      <img src={messages.filter(item => item.messageId === message.answering?.messageId)[0]?.url} className="rounded-[50%] w-7 h-7" alt="" />
+      <span className=" text-gray-500">{messages.filter(item => item.messageId === message.answering?.messageId)[0]?.name}</span>
+    <p className="ml-1 break-all text-xs text-white">
+      
+      {messages.filter(item => item.messageId === message.answering?.messageId)[0]?.message}
+    </p>
+  </div>
+    )}
+    </>
+  )
+}
+
+function MessageInput({ userAnswering, handleSubmit, input, handleInputChange, setUserAnswering, typingUser,userData }) {
+  
+  return(
+    <div className="form-test w-full bg-background remove-padding p-4">
           {userAnswering.messageId && (
           <div className="answer bg-slate-800 text-white p-1 flex justify-between">
           <p>replying to {userAnswering.name}</p>
@@ -472,7 +499,12 @@ export default function Channel() {
             <></>
           )}
         </div>
-      </div>
-    </div>
-  );
-}  
+  )
+}
+
+// function ListMessages({children}) {
+
+//   return(
+//     {children}
+//   )
+// }

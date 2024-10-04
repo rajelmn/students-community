@@ -143,6 +143,7 @@ app.post('/register', upload.single('file'), async (req, res) => {
             })
             await user.save();
             req.session.name = user.name;
+            req.session.userName = user.userName;
             req.session.url = user.url;
             req.session.isLoggedIn = true;
             res.status(200).json({message: 'logged succesfully'})
@@ -171,6 +172,7 @@ app.post('/register', upload.single('file'), async (req, res) => {
                      url: body.url,
                      date: body.date,
                      id: body.id,
+                     userName: body.userName,
                      answering: {
                         isAnswering: body.answering.isAnswering,
                         name: body.answering.name,
@@ -200,6 +202,7 @@ app.post('/register', upload.single('file'), async (req, res) => {
             res.status(200).json({
                 name: req.session.name,
                 url: req.session.url,
+                userName: req.session.userName,
             })
         } catch(err) {
             console.log('couldnt get user data: ', err)

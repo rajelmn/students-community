@@ -44,7 +44,7 @@ export default function App() {
     async function loadChannelsFromDb() {
       console.log('hey')
       try {
-        const res = await fetch('/getChannels', {
+        const res = await fetch('/api/getChannels', {
           method: 'get',
           credentials: "include",
         });
@@ -65,7 +65,7 @@ export default function App() {
      // temporarly until i use some react library to pass the state to other components
      async function getUserData() {
       try {
-        const res = await fetch('/userData');
+        const res = await fetch('/api/userData');
 
         if(res.ok)  {
           const userData = await res.json();
@@ -100,7 +100,7 @@ export default function App() {
   return(
     <>
     {isAuthenticated && (
-   <div className='flex'>
+   <div className='flex phone-view'>
     {isClickedOnMenu && (
     <SideBar channels={channels} inputSubject={inputSubject} handleCreatingChannels={handleCreatingChannels} handleChangingMenuState={setIsClickedOnMenu}/>
       )} 

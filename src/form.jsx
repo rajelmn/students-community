@@ -24,7 +24,7 @@ export default function FormPage() {
         }
         console.log(e.target.myImage.files[0])
         try {
-            const res = await fetch('/register', {
+            const res = await fetch('/api/register', {
                 method: "POSt", 
                 body: formData,
                 credentials: "include",
