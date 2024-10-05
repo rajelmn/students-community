@@ -1,6 +1,6 @@
 import Header from './header'
 import { useParams, Link } from 'react-router-dom'
-import { users } from './users';
+import { users } from '../users';
 export default function Main() {
     const {userId} = useParams();
     // const BlockMath = ReactKaTeX.BlockMath;

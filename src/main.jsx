@@ -2,13 +2,13 @@ import * as React from "react";
 import * as ReactDom from "react-dom/client";
 import App from "./App.jsx";
 // import './index.css'
-import Main from "./mainContent.jsx";
-import FormPage from "./form.jsx";
-import Header from "./header.jsx";
+import Main from "./components/mainContent.jsx";
+import FormPage from "./pages/form.jsx";
+import Header from "./components/header.jsx";
 // import { Root } from './App.jsx';
 import Channel from "./channel.jsx";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import { Error } from "./error.jsx";
+import { Error } from "./pages/error.jsx";
 const router = createBrowserRouter([
   {
     path: "/",

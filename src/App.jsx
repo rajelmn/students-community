@@ -1,9 +1,9 @@
 import {useEffect, useState} from 'react';
-import Header from './header';
-import SideBar from './sideBar';
+import Header from './components/header';
+import SideBar from './components/sideBar';
 import './App.css';
 import { io } from "socket.io-client";
-import Main from './mainContent'
+import Main from './components/mainContent'
 import { useNavigate, Outlet, useParams } from 'react-router-dom';
 import { useRef } from 'react';
 
@@ -44,7 +44,7 @@ export default function App() {
     async function loadChannelsFromDb() {
       console.log('hey')
       try {
-        const res = await fetch('/api/getChannels', {
+        const res = await fetch('/getChannels', {
           method: 'get',
           credentials: "include",
         });
@@ -65,7 +65,7 @@ export default function App() {
      // temporarly until i use some react library to pass the state to other components
      async function getUserData() {
       try {
-        const res = await fetch('/api/userData');
+        const res = await fetch('/userData');
 
         if(res.ok)  {
           const userData = await res.json();

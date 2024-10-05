@@ -1,4 +1,4 @@
-import {users} from './users'
+import {users} from '../users'
 import { Link } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { IoTicketOutline } from "react-icons/io5";

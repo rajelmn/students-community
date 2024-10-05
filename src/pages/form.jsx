@@ -2,7 +2,6 @@
 // import { useStore } from "./store"
 import { useState, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
-import './index.css';
 export default function FormPage() {
     const [file , setFile] = useState(null);
     const [error, setError] = useState(false);
@@ -24,7 +23,7 @@ export default function FormPage() {
         }
         console.log(e.target.myImage.files[0])
         try {
-            const res = await fetch('/api/register', {
+            const res = await fetch('/register', {
                 method: "POSt", 
                 body: formData,
                 credentials: "include",
